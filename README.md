@@ -1,4 +1,4 @@
-# BloodLink
+# Esprit-PIWEB-2A6-2026-BloodLink
 
 Projet d'intégration Web de la classe 2A6.
 
