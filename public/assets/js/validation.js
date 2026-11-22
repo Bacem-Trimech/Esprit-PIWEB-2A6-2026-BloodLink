@@ -16,7 +16,17 @@ document.addEventListener('DOMContentLoaded',()=>{
         if(field('confirmation')&&value('confirmation')!==value('mot_de_passe')) add('confirmation','Les mots de passe ne correspondent pas.');
       }
       if(kind==='activation'){if(value('mot_de_passe').length<12)add('mot_de_passe','Utilisez au moins 12 caractères.');if(value('confirmation')!==value('mot_de_passe'))add('confirmation','Les mots de passe ne correspondent pas.');}
-      if(kind==='invitation'){if(value('nom').length<2)add('nom','Saisissez un nom.');if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value('email')))add('email','Saisissez une adresse e-mail valide.');if(!field('consentement')?.checked)add('consentement','Le consentement est nécessaire.');}
+      if(['activation','profil','invitation','sos'].includes(kind)){
+        if(field('telephone')&&!/^[+0-9 ()-]{8,30}$/.test(value('telephone')))add('telephone','Téléphone invalide.');
+        if(field('ville')&&value('ville').length<2)add('ville','Saisissez une ville.');
+        if(field('date_naissance')&&(!value('date_naissance')||value('date_naissance')>new Date().toISOString().slice(0,10)))add('date_naissance','Date de naissance invalide.');
+      }
+      if(['invitation','invitation-responsable'].includes(kind)){if(value('nom').length<2)add('nom','Saisissez un nom.');if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value('email')))add('email','Saisissez une adresse e-mail valide.');if(kind==='invitation'&&!field('consentement')?.checked)add('consentement','Le consentement est nécessaire.');}
+      if(kind==='profil'&&value('nom').length<2)add('nom','Saisissez votre nom.');
+      if(kind==='password'){if(value('nouveau').length<12)add('nouveau','Utilisez au moins 12 caractères.');if(value('nouveau')!==value('confirmation'))add('confirmation','Les mots de passe ne correspondent pas.');}
+      if(kind==='sos'){if(value('lieu').length<5)add('lieu','Précisez le lieu.');if(!value('groupe_receveur'))add('groupe_receveur','Sélectionnez le groupe du receveur.');if(!field('consentement')?.checked)add('consentement','Le consentement est nécessaire.');}
+      if(kind==='don'&&(Number(value('volume_ml'))<420||Number(value('volume_ml'))>480))add('volume_ml','Indiquez un volume de 420 à 480 ml.');
+      if(kind==='scan'&&!/^[a-f0-9]{48}$/.test(value('code')))add('code','Code QR invalide.');
       if(kind==='collecte'){
         for(const name of ['titre','ville','adresse']) if(!value(name)) add(name,'Ce champ est nécessaire.');
         if(!value('debut')||!value('fin')||value('fin')<=value('debut')) add('fin','Vérifiez les dates de la collecte.');

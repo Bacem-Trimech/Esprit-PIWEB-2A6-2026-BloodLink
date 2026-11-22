@@ -13,7 +13,7 @@ function demarrerSession(): void
     ]);
     session_start();
     header('X-Content-Type-Options: nosniff');
-    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Referrer-Policy: no-referrer');
     header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; base-uri 'self'; form-action 'self'");
     header('Cache-Control: no-store');
 }
@@ -41,7 +41,7 @@ function verifierCsrf(): void
 function utilisateur(): ?array
 {
     if (empty($_SESSION['user_id'])) return null;
-    $sql = 'SELECT id, nom, email, role, actif FROM utilisateurs WHERE id = ?';
+    $sql = 'SELECT id, nom, email, role, actif, profil_complet, avatar_couleur FROM utilisateurs WHERE id = ?';
     $q = connexion()->prepare($sql);
     $q->execute([$_SESSION['user_id']]);
     $user = $q->fetch();

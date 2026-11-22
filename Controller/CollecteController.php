@@ -24,7 +24,7 @@ final class CollecteController
     }
     public function mesParticipations(int $id): array
     {
-        $q = connexion()->prepare('SELECT p.*,c.titre,c.ville,c.adresse,c.debut AS collecte_debut,cr.debut AS creneau_debut,d.effectue_le FROM participations p JOIN collectes c ON c.id=p.collecte_id LEFT JOIN creneaux cr ON cr.id=p.creneau_id LEFT JOIN dons_sang d ON d.participation_id=p.id WHERE p.donneur_id=? ORDER BY p.cree_le DESC');
+        $q = connexion()->prepare('SELECT p.*,c.titre,c.ville,c.adresse,c.debut AS collecte_debut,cr.debut AS creneau_debut,d.effectue_le,d.volume_ml,d.numero_poche FROM participations p JOIN collectes c ON c.id=p.collecte_id LEFT JOIN creneaux cr ON cr.id=p.creneau_id LEFT JOIN dons_sang d ON d.participation_id=p.id WHERE p.donneur_id=? ORDER BY p.cree_le DESC');
         $q->execute([$id]);
         return $q->fetchAll();
     }
@@ -95,6 +95,7 @@ final class CollecteController
     {
         $user = exigerConnexion();
         verifierCsrf();
+        if ($user['role']!=='DONNEUR' || !(int)$user['profil_complet']) throw new RuntimeException('Complétez votre profil donneur avant de réserver.');
         $db = connexion();
         $db->beginTransaction();
         try {
@@ -102,6 +103,8 @@ final class CollecteController
             $q->execute([$creneauId]);
             $cr = $q->fetch();
             if (!$cr || $cr['statut'] !== 'OUVERT' || $cr['collecte_statut'] !== 'PUBLIEE' || strtotime($cr['debut']) <= time()) throw new RuntimeException('Ce créneau n’est plus disponible.');
+            $horizon=(int)$db->query("SELECT valeur FROM parametres WHERE cle='horizon_reservation_jours'")->fetchColumn();
+            if ($horizon>0 && strtotime($cr['debut'])>time()+$horizon*86400) throw new RuntimeException('Ce créneau est au-delà de l’horizon de réservation autorisé.');
             $q = $db->prepare("SELECT COUNT(*) FROM participations WHERE creneau_id=? AND statut IN ('CONFIRMEE','ARRIVEE')");
             $q->execute([$creneauId]);
             if ((int)$q->fetchColumn() >= (int)$cr['capacite']) throw new RuntimeException('Ce créneau est complet.');
@@ -137,7 +140,7 @@ final class CollecteController
         $user = exigerRole(['RESPONSABLE','ADMIN']);
         verifierCsrf();
         $this->autoriserCollecte($collecteId,$user);
-        $q = connexion()->prepare('SELECT id FROM utilisateurs WHERE id=?');
+        $q = connexion()->prepare("SELECT id FROM utilisateurs WHERE id=? AND role='DONNEUR'");
         $q->execute([$donneurId]);
         if (!$q->fetch()) throw new RuntimeException('Compte donneur introuvable. Créez d’abord son compte.');
         $q = connexion()->prepare("SELECT COUNT(*) FROM participations WHERE collecte_id=? AND donneur_id=? AND statut IN ('CONFIRMEE','ARRIVEE')");
@@ -154,14 +157,15 @@ final class CollecteController
         $q = connexion()->prepare("UPDATE participations SET statut='ARRIVEE',arrivee_le=NOW() WHERE id=? AND statut='CONFIRMEE'");
         $q->execute([$id]);
     }
-    public function confirmerDon(int $id): void
+    public function confirmerDon(int $id, int $volumeMl): void
     {
         $user = exigerRole(['RESPONSABLE','ADMIN']);
         verifierCsrf();
         $this->autoriserParticipation($id,$user);
-        $q = connexion()->prepare("INSERT INTO dons_sang (participation_id,effectue_le,confirme_par) SELECT id,NOW(),? FROM participations WHERE id=? AND statut='ARRIVEE'");
-        $q->execute([$user['id'],$id]);
-        if (!$q->rowCount()) throw new RuntimeException('Le donneur doit être arrivé avant la confirmation du don.');
+        if ($volumeMl < 420 || $volumeMl > 480) throw new RuntimeException('Indiquez le volume réellement prélevé, entre 420 et 480 ml pour ce don de sang total.');
+        $q = connexion()->prepare("INSERT INTO dons_sang (participation_id,effectue_le,confirme_par,volume_ml,numero_poche) SELECT p.id,NOW(),?,?,? FROM participations p JOIN examens_pre_don x ON x.participation_id=p.id WHERE p.id=? AND p.statut='ARRIVEE' AND x.decision='APTE'");
+        $q->execute([$user['id'],$volumeMl,'BL-'.strtoupper(bin2hex(random_bytes(6))),$id]);
+        if (!$q->rowCount()) throw new RuntimeException('Le donneur doit être arrivé et déclaré apte avant la confirmation du don.');
     }
     private function autoriserParticipation(int $id, array $user): void
     {

@@ -28,6 +28,7 @@ final class UtilisateurController
         if (mb_strlen($nom) < 2 || mb_strlen($nom) > 100) $errors[] = 'Nom invalide.';
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 190) $errors[] = 'E-mail invalide.';
         if (!in_array($role, ['DONNEUR','RESPONSABLE','ADMIN'], true)) $errors[] = 'Rôle invalide.';
+        if ($id===null && $role!=='DONNEUR') $errors[]='Invitez les responsables depuis la page prévue. Les comptes administrateurs sont attribués à des comptes existants.';
         if (($id === null || $pass !== '') && strlen($pass) < 12) $errors[] = 'Le mot de passe doit contenir au moins 12 caractères.';
         if ($id === (int)$admin['id'] && ($role !== 'ADMIN' || !$actif)) $errors[] = 'Vous ne pouvez pas retirer votre propre accès administrateur.';
         if ($errors) return $errors;
@@ -58,7 +59,7 @@ final class UtilisateurController
         $admin = exigerRole(['ADMIN']);
         verifierCsrf();
         if ($id === (int)$admin['id']) throw new RuntimeException('Vous ne pouvez pas supprimer votre propre compte.');
-        $q = connexion()->prepare('DELETE FROM utilisateurs WHERE id=?');
+        $q = connexion()->prepare('UPDATE utilisateurs SET actif=0 WHERE id=?');
         $q->execute([$id]);
     }
 }

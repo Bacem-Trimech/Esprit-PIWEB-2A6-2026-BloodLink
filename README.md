@@ -1,36 +1,39 @@
 # BloodLink — Projet Web 2A6
 
-Application de gestion des collectes de sang, des réservations, des arrivées sur place et de l’historique des dons. Interface entièrement en français.
+Application PHP/MySQL de collecte de sang. Interface en français, architecture MVC, thème rouge et blanc repris de BloodLink-Atelier.
 
-## Fonctionnalités
+## Espaces et parcours
 
-- Compte donneur : inscription, connexion, déconnexion, consultation des collectes, réservation et annulation d’un créneau, historique des réservations et des dons confirmés.
-- Responsable : création et publication des collectes, création des créneaux, accueil des personnes sans réservation, création avec consentement d’un compte à activer par le donneur, suivi des participations et confirmation des dons.
-- Administrateur : consultation, ajout, modification, désactivation et suppression des comptes ; attribution des rôles.
-- Sécurité : mots de passe hachés, requêtes SQL préparées, contrôle des rôles à chaque requête, protection CSRF, échappement HTML, renouvellement de l’identifiant de session, cookie HttpOnly/SameSite, validation PHP et JavaScript.
+- **Visiteur** : consulter les collectes et les alertes SOS ; publier une alerte sans compte. Elle exige un lieu, une ville, un groupe receveur, un téléphone et le consentement de publication. Elle disparaît automatiquement après 2 heures ; l’administrateur peut la retirer avant. Le tableau des groupes proposés concerne uniquement les globules rouges et ne remplace jamais les contrôles de compatibilité du centre.
+- **Donneur** : inscription, connexion, profil (coordonnées, date de naissance, groupe déclaré, couleur de l’avatar, préférence de contact), modification du mot de passe, QR personnel renouvelable, réservation selon les places disponibles, annulation, historique des dons confirmés avec volume et poche, examen et résultats validés.
+- **Responsable** : compte créé par invitation d’un administrateur. Il complète ses informations et choisit son mot de passe. Il gère ses collectes et créneaux, enregistre les arrivées et les donneurs sans réservation, crée un compte provisoire pour un visiteur sans compte après consentement et remet un lien ou QR d’activation. Il saisit les mesures avant don, la décision du professionnel, le volume prélevé et le compte rendu du laboratoire.
+- **Administrateur** : tableau de bord (donneurs, responsables, collectes, réservations, visites sur place, dons, volume, SOS, pages vues), utilisateurs et rôles, invitations responsables, toutes les collectes, modération SOS, identification QR et paramètres généraux.
 
-## Architecture MVC
+Les invitations sont aléatoires, stockées sous forme d’empreinte, à usage unique et valables 30 jours. Une nouvelle invitation remplace l’ancienne. Le QR donneur contient seulement un identifiant opaque ; la consultation exige une connexion responsable ou administrateur. La caméra QR utilise `BarcodeDetector` si le navigateur le permet ; la saisie du code reste possible.
 
-- `Model/` : objets représentant les données.
-- `Controller/` : traitements et requêtes préparées.
-- `View/front-office/` et `View/back-office/` : affichage public et administration.
-- `Service/` : sécurité des sessions et fonctions communes.
-- `config/` : connexion PDO.
-- `public/assets/` : styles et JavaScript. Le thème reprend les couleurs et composants de BloodLink-Atelier.
-- `index.php` : routage.
+Un compte créé directement reçoit une alerte l’invitant à compléter son profil. La réservation exige un profil donneur complété. La suppression depuis l’administration désactive un compte pour conserver la traçabilité de ses dons.
 
-## Installation sur XAMPP
+## Installation XAMPP
 
-1. Placer le dépôt dans `C:\xampp\htdocs\Esprit-PIWEB-2A6-2026-BloodLink`.
-2. Démarrer Apache et MySQL dans XAMPP.
-3. Importer `database.sql` dans phpMyAdmin, ou lancer :
-   `C:\xampp\mysql\bin\mysql.exe -u root < database.sql`
-4. Par défaut, la base s’appelle `bloodlink_piweb_2a6`, avec `root` et un mot de passe vide. Pour modifier cette configuration, définir `BLOODLINK_DB_HOST`, `BLOODLINK_DB_NAME`, `BLOODLINK_DB_USER` et `BLOODLINK_DB_PASS` dans l’environnement du serveur.
-5. Créer le premier administrateur depuis un terminal local : définir temporairement `BLOODLINK_ADMIN_PASSWORD` avec un mot de passe d’au moins 12 caractères, puis lancer `C:\xampp\php\php.exe scripts/creer_admin.php "Nom Administrateur" admin@example.org`. Effacer ensuite cette variable d’environnement.
+1. Cloner ce dépôt dans `C:\xampp\htdocs\Esprit-PIWEB-2A6-2026-BloodLink` et démarrer Apache et MySQL.
+2. Pour une **installation neuve**, importer `database.sql` dans phpMyAdmin. Ce fichier crée la base `bloodlink_piweb_2a6` et toutes les tables.
+3. Pour une **installation déjà créée avec l’ancien schéma**, exécuter une seule fois `migrations/002_fonctionnalites.sql`, puis `migrations/003_depistages.sql`, dans cet ordre. Ne pas réimporter `database.sql` sur une base existante.
+4. Par défaut, PDO utilise `127.0.0.1`, la base `bloodlink_piweb_2a6`, `root` et un mot de passe vide. Au besoin, définir `BLOODLINK_DB_HOST`, `BLOODLINK_DB_NAME`, `BLOODLINK_DB_USER`, `BLOODLINK_DB_PASS` dans l’environnement du serveur.
+5. Créer le premier administrateur, si aucun n’existe : définir temporairement `BLOODLINK_ADMIN_PASSWORD` (12 caractères minimum), puis lancer `C:\xampp\php\php.exe scripts/creer_admin.php "Nom Administrateur" admin@example.org`. Retirer ensuite cette variable. Sur la base locale préparée pour ce projet, le compte Bacem Trimech est déjà administrateur.
 6. Ouvrir `http://localhost/Esprit-PIWEB-2A6-2026-BloodLink/`.
 
-Les mots de passe ne doivent jamais être placés dans le dépôt. L’inscription publique crée uniquement des comptes `DONNEUR`. Les rôles élevés sont attribués dans l’espace administrateur.
+L’inscription publique crée seulement un **DONNEUR**. Inviter un responsable depuis « Inviter un responsable » dans l’administration et lui transmettre le lien personnel. Le projet ne fournit pas encore d’e-mail transactionnel : le lien doit être remis par un canal de confiance. Pour scanner avec un téléphone, servir l’application sur une adresse accessible au téléphone et en HTTPS ; `localhost` sur le téléphone désigne le téléphone lui-même.
 
-## Travail en groupe
+## Sécurité et portée médicale
 
-Les branches des membres servent aux développements individuels. Les tâches et leur responsable doivent être suivis dans le GitHub Project Board du dépôt. Chaque contribution passe par des commits traçables et une fusion contrôlée dans `main`. Avant la validation, importer la base et vérifier les fonctionnalités de chaque membre sur la même machine.
+Validation des formulaires en PHP et JavaScript (sans attribut HTML `required`), requêtes PDO préparées, échappement des vues, jetons CSRF, mots de passe hachés, renouvellement de session, cookies HttpOnly/SameSite, contrôle des rôles et des collectes à chaque requête, limitation de fréquence SOS. Les résultats du laboratoire ne sont montrés au donneur qu’après validation ; un résultat à confirmer affiche une demande de contact avec le centre, sans détail sensible. La saisie des examens et dépistages doit être effectuée d’après un professionnel et un compte rendu réel. Cette application scolaire ne décide pas de l’aptitude médicale ni de la compatibilité transfusionnelle.
+
+Le volume enregistré pour un don de sang total est limité à 420–480 ml et est saisi comme volume réellement prélevé. Les paramètres administrateur permettent le nom de l’organisation, le contact public, la capacité proposée pour un créneau, l’horizon de réservation et le message d’accueil.
+
+Le QR est généré localement avec `qrcode-generator` de Kazuhiko Arase, licence MIT (`public/assets/js/vendor/qrcode.js`).
+
+## Structure et collaboration
+
+`Controller/` : logique métier ; `Service/` : sécurité ; `View/front-office/` et `View/back-office/` : pages ; `public/assets/` : thème et scripts ; `config/` : PDO ; `database.sql` et `migrations/` : schéma ; `index.php` : routage.
+
+Chaque membre travaille sur sa branche et ses tâches sont suivies dans le GitHub Project Board. Les commits et fusions doivent permettre de retracer les contributions. Avant la validation, réunir et tester toutes les branches sur la machine de démonstration.
