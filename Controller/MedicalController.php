@@ -25,7 +25,7 @@ final class MedicalController
         $weight=$this->nombre($post,'poids_kg',25,250);
         $decision=(string)($post['decision']??'');
         if (!in_array($decision,['EN_ATTENTE','APTE','AJOURNE'],true)) throw new RuntimeException('Décision invalide.');
-        if ($decision==='APTE' && in_array(null,[$s,$d,$pulse,$temp,$hb,$weight],true)) throw new RuntimeException('Toutes les mesures sont nécessaires avant de déclarer le donneur apte.');
+        if ($decision!=='EN_ATTENTE' && in_array(null,[$s,$d,$pulse,$temp,$hb,$weight],true)) throw new RuntimeException('Remplissez les six mesures avant de choisir Apte ou Ajourné.');
         $q=connexion()->prepare('INSERT INTO examens_pre_don (participation_id,tension_systolique,tension_diastolique,pouls,temperature_c,hemoglobine_g_dl,poids_kg,decision,saisi_par) VALUES (?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE tension_systolique=VALUES(tension_systolique),tension_diastolique=VALUES(tension_diastolique),pouls=VALUES(pouls),temperature_c=VALUES(temperature_c),hemoglobine_g_dl=VALUES(hemoglobine_g_dl),poids_kg=VALUES(poids_kg),decision=VALUES(decision),saisi_par=VALUES(saisi_par),saisi_le=NOW()');
         $q->execute([$id,$s,$d,$pulse,$temp,$hb,$weight,$decision,$staff['id']]);
     }

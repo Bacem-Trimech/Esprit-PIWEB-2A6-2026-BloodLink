@@ -108,6 +108,7 @@ final class CollecteController
             $q = $db->prepare("SELECT COUNT(*) FROM participations WHERE creneau_id=? AND statut IN ('CONFIRMEE','ARRIVEE')");
             $q->execute([$creneauId]);
             if ((int)$q->fetchColumn() >= (int)$cr['capacite']) throw new RuntimeException('Ce créneau est complet.');
+            $this->verifierDelaiDon((int)$user['id'], (string)$cr['debut']);
             $q = $db->prepare("SELECT COUNT(*) FROM participations WHERE collecte_id=? AND donneur_id=? AND statut IN ('CONFIRMEE','ARRIVEE')");
             $q->execute([$cr['collecte_id'],$user['id']]);
             if ($q->fetchColumn()) throw new RuntimeException('Vous participez déjà à cette collecte.');
@@ -131,21 +132,41 @@ final class CollecteController
     public function participationsCollecte(int $collecteId, array $user): array
     {
         $this->autoriserCollecte($collecteId,$user);
-        $q = connexion()->prepare('SELECT p.*,u.nom,u.email,cr.debut AS creneau_debut,d.effectue_le FROM participations p JOIN utilisateurs u ON u.id=p.donneur_id LEFT JOIN creneaux cr ON cr.id=p.creneau_id LEFT JOIN dons_sang d ON d.participation_id=p.id WHERE p.collecte_id=? ORDER BY p.cree_le DESC');
+        $q = connexion()->prepare("SELECT p.*,u.nom,u.email,cr.debut AS creneau_debut,d.effectue_le FROM participations p JOIN utilisateurs u ON u.id=p.donneur_id LEFT JOIN creneaux cr ON cr.id=p.creneau_id LEFT JOIN dons_sang d ON d.participation_id=p.id WHERE p.collecte_id=? AND p.statut NOT IN ('ANNULEE','ABSENTE') ORDER BY p.cree_le DESC");
         $q->execute([$collecteId]);
         return $q->fetchAll();
     }
-    public function enregistrerSurPlace(int $collecteId, int $donneurId): void
+    public function enregistrerSurPlace(int $collecteId, string $identifiant): void
     {
         $user = exigerRole(['RESPONSABLE','ADMIN']);
         verifierCsrf();
         $this->autoriserCollecte($collecteId,$user);
+        $identifiant=trim($identifiant);
+        if (preg_match('/^[A-F0-9]{12}$/D',$identifiant)) {
+            $q=connexion()->prepare('SELECT id,collecte_id,statut FROM participations WHERE code_confirmation=?');
+            $q->execute([$identifiant]); $reservation=$q->fetch();
+            if (!$reservation) throw new RuntimeException('Code de réservation introuvable. Vérifiez les 12 caractères.');
+            if ((int)$reservation['collecte_id']!==$collecteId) throw new RuntimeException('Cette réservation appartient à une autre collecte.');
+            if ($reservation['statut']==='CONFIRMEE') {
+                $this->arriver((int)$reservation['id']);
+                return;
+            }
+            throw new RuntimeException('Cette réservation est déjà arrivée, annulée ou terminée.');
+        }
+        if (ctype_digit($identifiant)) $donneurId=(int)$identifiant;
+        elseif (preg_match('/^[a-f0-9]{48}$/D',$identifiant)) {
+            $q=connexion()->prepare("SELECT id FROM utilisateurs WHERE qr_identifiant=? AND role='DONNEUR' AND actif=1");
+            $q->execute([$identifiant]); $donneurId=(int)$q->fetchColumn();
+        } else throw new RuntimeException('Saisissez un identifiant donneur, un code de réservation ou un code QR valide.');
         $q = connexion()->prepare("SELECT id FROM utilisateurs WHERE id=? AND role='DONNEUR'");
         $q->execute([$donneurId]);
         if (!$q->fetch()) throw new RuntimeException('Compte donneur introuvable. Créez d’abord son compte.');
         $q = connexion()->prepare("SELECT COUNT(*) FROM participations WHERE collecte_id=? AND donneur_id=? AND statut IN ('CONFIRMEE','ARRIVEE')");
         $q->execute([$collecteId,$donneurId]);
-        if ($q->fetchColumn()) throw new RuntimeException('Ce donneur participe déjà à cette collecte.');
+        if ($q->fetchColumn()) throw new RuntimeException('Ce donneur est déjà inscrit à cette collecte. Utilisez sa réservation pour marquer son arrivée.');
+        $q=connexion()->prepare('SELECT debut FROM collectes WHERE id=?');
+        $q->execute([$collecteId]);
+        $this->verifierDelaiDon($donneurId,(string)$q->fetchColumn());
         $q = connexion()->prepare("INSERT INTO participations (collecte_id,donneur_id,mode,statut,arrivee_le,code_confirmation) VALUES (?,?,'SUR_PLACE','ARRIVEE',NOW(),?)");
         $q->execute([$collecteId,$donneurId,strtoupper(bin2hex(random_bytes(6)))]);
     }
@@ -157,13 +178,22 @@ final class CollecteController
         $q = connexion()->prepare("UPDATE participations SET statut='ARRIVEE',arrivee_le=NOW() WHERE id=? AND statut='CONFIRMEE'");
         $q->execute([$id]);
     }
+    public function retirerParticipation(int $id): void
+    {
+        $user=exigerRole(['RESPONSABLE','ADMIN']);
+        verifierCsrf();
+        $this->autoriserParticipation($id,$user);
+        $q=connexion()->prepare("UPDATE participations p LEFT JOIN dons_sang d ON d.participation_id=p.id SET p.statut=IF(p.statut='ARRIVEE','ABSENTE','ANNULEE') WHERE p.id=? AND p.statut IN ('CONFIRMEE','ARRIVEE') AND d.id IS NULL");
+        $q->execute([$id]);
+        if (!$q->rowCount()) throw new RuntimeException('Cette participation a déjà été retirée ou son don est confirmé.');
+    }
     public function confirmerDon(int $id, int $volumeMl): void
     {
         $user = exigerRole(['RESPONSABLE','ADMIN']);
         verifierCsrf();
         $this->autoriserParticipation($id,$user);
         if ($volumeMl < 420 || $volumeMl > 480) throw new RuntimeException('Indiquez le volume réellement prélevé, entre 420 et 480 ml pour ce don de sang total.');
-        $q = connexion()->prepare("INSERT INTO dons_sang (participation_id,effectue_le,confirme_par,volume_ml,numero_poche) SELECT p.id,NOW(),?,?,? FROM participations p JOIN examens_pre_don x ON x.participation_id=p.id WHERE p.id=? AND p.statut='ARRIVEE' AND x.decision='APTE'");
+        $q = connexion()->prepare("INSERT INTO dons_sang (participation_id,effectue_le,confirme_par,volume_ml,numero_poche) SELECT p.id,COALESCE(p.arrivee_le,NOW()),?,?,? FROM participations p JOIN examens_pre_don x ON x.participation_id=p.id WHERE p.id=? AND p.statut='ARRIVEE' AND x.decision='APTE'");
         $q->execute([$user['id'],$volumeMl,'BL-'.strtoupper(bin2hex(random_bytes(6))),$id]);
         if (!$q->rowCount()) throw new RuntimeException('Le donneur doit être arrivé et déclaré apte avant la confirmation du don.');
     }
@@ -174,5 +204,19 @@ final class CollecteController
         $collecteId = $q->fetchColumn();
         if (!$collecteId) throw new RuntimeException('Participation introuvable.');
         $this->autoriserCollecte((int)$collecteId,$user);
+    }
+    private function verifierDelaiDon(int $donneurId, string $dateCollecte): void
+    {
+        $q=connexion()->prepare('SELECT MAX(d.effectue_le) FROM dons_sang d JOIN participations p ON p.id=d.participation_id WHERE p.donneur_id=?');
+        $q->execute([$donneurId]);
+        $dernier=$q->fetchColumn();
+        if ($dernier) {
+            $possible=(new DateTimeImmutable($dernier))->modify('+12 weeks');
+            if (new DateTimeImmutable($dateCollecte)<$possible) throw new RuntimeException('Dernier don confirmé le '.date('d/m/Y',strtotime($dernier)).'. Une nouvelle collecte est possible à partir du '.$possible->format('d/m/Y').' après nouvel avis du centre.');
+        }
+        $q=connexion()->prepare("SELECT l.statut_prochain_don,l.prochain_don_le FROM resultats_laboratoire l JOIN participations p ON p.id=l.participation_id JOIN dons_sang d ON d.participation_id=p.id WHERE p.donneur_id=? ORDER BY d.effectue_le DESC LIMIT 1");
+        $q->execute([$donneurId]); $avis=$q->fetch();
+        if ($avis && $avis['statut_prochain_don']==='NON_AUTORISE') throw new RuntimeException('Le dernier avis du centre ne permet pas une nouvelle inscription. Contactez le centre.');
+        if ($avis && $avis['statut_prochain_don']==='AUTORISE' && $avis['prochain_don_le'] && substr($dateCollecte,0,10)<$avis['prochain_don_le']) throw new RuntimeException('Le centre a indiqué une prochaine date possible : '.date('d/m/Y',strtotime($avis['prochain_don_le'])).'.');
     }
 }

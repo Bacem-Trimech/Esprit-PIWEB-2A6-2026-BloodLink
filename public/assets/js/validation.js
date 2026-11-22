@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded',()=>{
+window.bloodlinkInitValidation=()=>{
   for(const form of document.querySelectorAll('form[data-validate]')){
     form.addEventListener('submit',event=>{
       for(const old of form.querySelectorAll('.field-error')) old.remove();
@@ -35,9 +35,11 @@ document.addEventListener('DOMContentLoaded',()=>{
         if(!value('debut')||!value('fin')||value('fin')<=value('debut')) add('fin','Vérifiez les horaires du créneau.');
         if(Number(value('capacite'))<1) add('capacite','Indiquez une capacité positive.');
       }
-      if(kind==='sur-place'&&Number(value('donneur_id'))<1) add('donneur_id','Indiquez un identifiant valide.');
+      if(kind==='sur-place'&&!/^(?:[1-9][0-9]*|[A-F0-9]{12}|[a-f0-9]{48})$/.test(value('donneur_id'))) add('donneur_id','Saisissez un numéro de compte, un code de réservation ou un QR valide.');
+      if(kind==='examen'&&value('decision')!=='EN_ATTENTE') for(const name of ['tension_systolique','tension_diastolique','pouls','temperature_c','hemoglobine_g_dl','poids_kg']) if(!value(name)) add(name,'Remplissez cette mesure avant de choisir Apte ou Ajourné.');
       if(errors.length){event.preventDefault();for(const [input,message] of errors){const p=document.createElement('span');p.className='field-error';p.textContent=message;input.after(p);}errors[0][0].focus();}
     });
   }
   for(const form of document.querySelectorAll('form[data-confirm]')) form.addEventListener('submit',e=>{if(!confirm(form.dataset.confirm))e.preventDefault()});
-});
+};
+document.addEventListener('DOMContentLoaded',window.bloodlinkInitValidation);

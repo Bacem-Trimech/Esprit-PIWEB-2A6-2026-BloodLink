@@ -13,6 +13,8 @@ Les invitations sont aléatoires, stockées sous forme d’empreinte, à usage u
 
 Un compte créé directement reçoit une alerte l’invitant à compléter son profil. La réservation exige un profil donneur complété. La suppression depuis l’administration désactive un compte pour conserver la traçabilité de ses dons.
 
+Le responsable peut enregistrer une arrivée avec le numéro du compte, le code de réservation de 12 caractères ou le code QR personnel. Un code de réservation rattache l’arrivée à la réservation existante. Un participant sans don confirmé peut être retiré de la collecte ; son historique reste conservé. Les formulaires affichent les erreurs sur la page courante et les actions de sauvegarde utilisent JavaScript pour actualiser l’écran sans rechargement complet. Chaque champ de mot de passe dispose d’un bouton « Voir ».
+
 ## Installation XAMPP
 
 1. Cloner ce dépôt dans `C:\xampp\htdocs\Esprit-PIWEB-2A6-2026-BloodLink` et démarrer Apache et MySQL.
@@ -29,6 +31,8 @@ L’inscription publique crée seulement un **DONNEUR**. Inviter un responsable 
 Validation des formulaires en PHP et JavaScript (sans attribut HTML `required`), requêtes PDO préparées, échappement des vues, jetons CSRF, mots de passe hachés, renouvellement de session, cookies HttpOnly/SameSite, contrôle des rôles et des collectes à chaque requête, limitation de fréquence SOS. Les résultats du laboratoire ne sont montrés au donneur qu’après validation ; un résultat à confirmer affiche une demande de contact avec le centre, sans détail sensible. La saisie des examens et dépistages doit être effectuée d’après un professionnel et un compte rendu réel. Cette application scolaire ne décide pas de l’aptitude médicale ni de la compatibilité transfusionnelle.
 
 Le volume enregistré pour un don de sang total est limité à 420–480 ml et est saisi comme volume réellement prélevé. Le responsable règle les paramètres de ses propres collectes. L’avis pour un prochain don est saisi manuellement : en cours, autorisé à partir d’une date, ou non autorisé. Même après un avis favorable, une nouvelle évaluation au centre reste nécessaire.
+
+Pour le sang total, les réservations et arrivées sur place sont refusées avant 12 semaines après le dernier don confirmé enregistré dans BloodLink. La date de la collecte, et non celle de l’inscription, est comparée à ce délai prudent. Le site explique la prochaine date possible. Cette vérification ne connaît que les dons enregistrés dans BloodLink ; elle ne remplace pas l’entretien au centre. Voir les recommandations de [l’OMS sur la sélection des donneurs](https://iris.who.int/bitstream/handle/10665/76724/9789241548519_eng.pdf?sequence=1) et [Idaraty Tunisie sur le don de sang total](https://www.idaraty.tn/fr/public/fr/public/index.php/fr/procedures/don-du-sang-total).
 
 Le QR est généré localement avec `qrcode-generator` de Kazuhiko Arase, licence MIT (`public/assets/js/vendor/qrcode.js`).
 

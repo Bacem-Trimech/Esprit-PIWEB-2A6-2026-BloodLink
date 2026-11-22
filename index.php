@@ -74,11 +74,15 @@ try {
                 $collectes->annuler((int)($_POST['id']??0)); rediriger('mes-participations');
             case 'sur-place':
                 $id=(int)($_POST['collecte_id']??0);
-                $collectes->enregistrerSurPlace($id,(int)($_POST['donneur_id']??0));
+                $collectes->enregistrerSurPlace($id,(string)($_POST['donneur_id']??''));
                 header('Location: index.php?page=collecte-gestion&id='.$id); exit;
             case 'arriver':
                 $id=(int)($_POST['collecte_id']??0);
                 $collectes->arriver((int)($_POST['participation_id']??0));
+                header('Location: index.php?page=collecte-gestion&id='.$id); exit;
+            case 'participation-retirer':
+                $id=(int)($_POST['collecte_id']??0);
+                $collectes->retirerParticipation((int)($_POST['participation_id']??0));
                 header('Location: index.php?page=collecte-gestion&id='.$id); exit;
             case 'examen-sauver':
                 $id=(int)($_POST['collecte_id']??0);

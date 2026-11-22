@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded',()=>{
+window.bloodlinkInitExperience=()=>{
   function drawQr(element,value){
     if(typeof qrcode!=='function') return;
     const qr=qrcode(0,'M'); qr.addData(value); qr.make();
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(!remaining){el.closest('.campaign-card')?.remove();return;}
     el.textContent='Temps restant : '+String(Math.floor(remaining/3600)).padStart(2,'0')+':'+String(Math.floor(remaining%3600/60)).padStart(2,'0')+':'+String(remaining%60).padStart(2,'0');
   });}
-  tick();setInterval(tick,1000);
+  tick();if(!window.bloodlinkTicker) window.bloodlinkTicker=setInterval(tick,1000);
   const button=document.getElementById('scan-start');
   if(button) button.addEventListener('click',async()=>{
     const message=document.getElementById('scan-message');
@@ -37,4 +37,5 @@ document.addEventListener('DOMContentLoaded',()=>{
       };scan();
     }catch(error){if(stream)stream.getTracks().forEach(t=>t.stop());message.textContent='Caméra indisponible. Saisissez le code ci-dessous.';}
   });
-});
+};
+document.addEventListener('DOMContentLoaded',window.bloodlinkInitExperience);
