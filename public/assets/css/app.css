@@ -1,0 +1,9 @@
+/* Compléments du thème BloodLink-Atelier */
+.slot-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.slot-row small{display:block;color:var(--muted);margin-top:4px}
+.inline-fields{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-top:18px}
+.inline-fields .field{min-width:160px;flex:1}
+.form-note a{color:var(--red);font-weight:700}
+.field input[type=checkbox]{width:auto}
+.field-error{color:#a5242f;font-size:12px;margin-top:4px}
+@media(max-width:680px){.site-header .main-nav{display:flex;position:static;padding:0;box-shadow:none;border:0;overflow:auto}.site-header .header-actions{display:flex}.site-header{height:auto;flex-wrap:wrap;padding:12px 16px}.site-header .brand{width:100%}.site-header .main-nav{order:3;width:100%}.site-header .main-nav a{white-space:nowrap}.inline-fields{display:block}.inline-fields .field{margin-bottom:12px}}
