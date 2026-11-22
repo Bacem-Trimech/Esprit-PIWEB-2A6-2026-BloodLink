@@ -114,9 +114,7 @@ try {
     }
     switch($page) {
         case 'accueil': case 'collectes':
-            $items=$collectes->publiques(); $tableau->compterVue();
-            if ($page==='accueil') $settings=connexion()->query("SELECT cle,valeur FROM parametres WHERE cle='message_accueil'")->fetchAll(PDO::FETCH_KEY_PAIR);
-            break;
+            $items=$collectes->publiques(); $tableau->compterVue(); break;
         case 'collecte':
             $detail=$collectes->detail($id);
             if (!$detail) { http_response_code(404); $page='introuvable'; }
@@ -159,7 +157,9 @@ try {
             $slots=$collectes->creneaux($id);
             $participations=$collectes->participationsCollecte($id,$current);
             $medicalMap=$medical->pourCollecte($id);
-            $settings=connexion()->query("SELECT cle,valeur FROM parametres WHERE cle='capacite_defaut'")->fetchAll(PDO::FETCH_KEY_PAIR);
+            $q=connexion()->prepare('SELECT capacite_defaut FROM parametres_responsable WHERE responsable_id=?');
+            $q->execute([$detail['organisateur_id']]);
+            $settings=['capacite_defaut'=>(int)($q->fetchColumn() ?: 2)];
             break;
         case 'connexion': case 'inscription': case 'activer': case 'introuvable': break;
         default: http_response_code(404); $page='introuvable';

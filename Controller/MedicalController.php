@@ -45,6 +45,8 @@ final class MedicalController
         if (!$don->fetchColumn()) throw new RuntimeException('Le résultat du laboratoire nécessite un don confirmé.');
         $group=(string)($post['groupe_confirme']??'');
         $status=(string)($post['statut']??'');
+        $suivi=(string)($post['statut_prochain_don']??'EN_COURS');
+        $date=trim((string)($post['prochain_don_le']??''));
         $tests=[];
         foreach(['vih','vhb','vhc','syphilis'] as $key) {
             $value=(string)($post[$key]??'EN_ATTENTE');
@@ -53,18 +55,22 @@ final class MedicalController
         }
         if ($group!=='' && !in_array($group,SosController::GROUPES,true)) throw new RuntimeException('Groupe sanguin invalide.');
         if (!in_array($status,['EN_ATTENTE','VALIDE','CONTACT_CENTRE'],true)) throw new RuntimeException('Statut invalide.');
+        if (!in_array($suivi,['EN_COURS','AUTORISE','NON_AUTORISE'],true)) throw new RuntimeException('Statut du prochain don invalide.');
+        $dateObj=$date!=='' ? DateTimeImmutable::createFromFormat('!Y-m-d',$date) : false;
+        if ($date!=='' && (!$dateObj || $dateObj->format('Y-m-d')!==$date)) throw new RuntimeException('Date du prochain don invalide.');
+        if ($suivi==='AUTORISE' && ($status!=='VALIDE' || $date==='')) throw new RuntimeException('Un avis favorable exige des résultats validés et une date indiquée par le centre.');
         if ($status==='VALIDE' && ($group==='' || count(array_filter($tests,fn($v)=>$v==='NON_REACTIF'))!==4)) throw new RuntimeException('La validation publique exige un groupe confirmé et quatre dépistages non réactifs. Si un contrôle est nécessaire, choisissez « Contacter le centre ».');
-        $q=connexion()->prepare('INSERT INTO resultats_laboratoire (participation_id,groupe_confirme,statut,vih,vhb,vhc,syphilis,saisi_par) VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE groupe_confirme=VALUES(groupe_confirme),statut=VALUES(statut),vih=VALUES(vih),vhb=VALUES(vhb),vhc=VALUES(vhc),syphilis=VALUES(syphilis),saisi_par=VALUES(saisi_par),saisi_le=NOW()');
-        $q->execute([$id,$group?:null,$status,...$tests,$staff['id']]);
+        $q=connexion()->prepare('INSERT INTO resultats_laboratoire (participation_id,groupe_confirme,statut,vih,vhb,vhc,syphilis,statut_prochain_don,prochain_don_le,saisi_par) VALUES (?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE groupe_confirme=VALUES(groupe_confirme),statut=VALUES(statut),vih=VALUES(vih),vhb=VALUES(vhb),vhc=VALUES(vhc),syphilis=VALUES(syphilis),statut_prochain_don=VALUES(statut_prochain_don),prochain_don_le=VALUES(prochain_don_le),saisi_par=VALUES(saisi_par),saisi_le=NOW()');
+        $q->execute([$id,$group?:null,$status,...$tests,$suivi,$suivi==='AUTORISE'?$date:null,$staff['id']]);
     }
     public function pourDonneur(int $donneurId): array
     {
-        $q=connexion()->prepare('SELECT p.id,c.titre,c.debut,x.tension_systolique,x.tension_diastolique,x.pouls,x.temperature_c,x.hemoglobine_g_dl,x.poids_kg,x.decision,l.groupe_confirme,l.statut AS resultat_statut,l.vih,l.vhb,l.vhc,l.syphilis FROM participations p JOIN collectes c ON c.id=p.collecte_id LEFT JOIN examens_pre_don x ON x.participation_id=p.id LEFT JOIN resultats_laboratoire l ON l.participation_id=p.id WHERE p.donneur_id=? ORDER BY c.debut DESC');
+        $q=connexion()->prepare('SELECT p.id,c.titre,c.debut,x.tension_systolique,x.tension_diastolique,x.pouls,x.temperature_c,x.hemoglobine_g_dl,x.poids_kg,x.decision,l.groupe_confirme,l.statut AS resultat_statut,l.statut_prochain_don,l.prochain_don_le,l.vih,l.vhb,l.vhc,l.syphilis FROM participations p JOIN collectes c ON c.id=p.collecte_id LEFT JOIN examens_pre_don x ON x.participation_id=p.id LEFT JOIN resultats_laboratoire l ON l.participation_id=p.id WHERE p.donneur_id=? ORDER BY c.debut DESC');
         $q->execute([$donneurId]); return $q->fetchAll();
     }
     public function pourCollecte(int $collecteId): array
     {
-        $q=connexion()->prepare('SELECT p.id,x.decision,l.statut AS resultat_statut FROM participations p LEFT JOIN examens_pre_don x ON x.participation_id=p.id LEFT JOIN resultats_laboratoire l ON l.participation_id=p.id WHERE p.collecte_id=?');
+        $q=connexion()->prepare('SELECT p.id,x.decision,l.statut AS resultat_statut,l.statut_prochain_don,l.prochain_don_le,l.groupe_confirme,l.vih,l.vhb,l.vhc,l.syphilis FROM participations p LEFT JOIN examens_pre_don x ON x.participation_id=p.id LEFT JOIN resultats_laboratoire l ON l.participation_id=p.id WHERE p.collecte_id=?');
         $q->execute([$collecteId]);
         $map=[]; foreach($q->fetchAll() as $x) $map[$x['id']]=$x;
         return $map;

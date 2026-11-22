@@ -5,31 +5,33 @@ final class ParametreController
 {
     public function tous(): array
     {
-        exigerRole(['ADMIN']);
-        return connexion()->query('SELECT cle,valeur FROM parametres ORDER BY cle')->fetchAll(PDO::FETCH_KEY_PAIR);
+        $user=exigerRole(['RESPONSABLE']);
+        $q=connexion()->prepare('SELECT nom_organisation,contact_public,capacite_defaut,horizon_reservation_jours,message_accueil FROM parametres_responsable WHERE responsable_id=?');
+        $q->execute([$user['id']]);
+        return $q->fetch() ?: [
+            'nom_organisation'=>'BloodLink', 'contact_public'=>'',
+            'capacite_defaut'=>2, 'horizon_reservation_jours'=>60,
+            'message_accueil'=>'Bienvenue à notre collecte de sang.',
+        ];
     }
     public function sauver(array $post): array
     {
-        $user=exigerRole(['ADMIN']);
+        $user=exigerRole(['RESPONSABLE']);
         verifierCsrf();
-        $allowed=[
-            'nom_organisation'=>[2,100],
-            'contact_public'=>[0,190],
-            'capacite_defaut'=>[1,3],
-            'horizon_reservation_jours'=>[1,3],
-            'message_accueil'=>[5,300],
-        ];
+        $nom=trim((string)($post['nom_organisation']??''));
+        $contact=trim((string)($post['contact_public']??''));
+        $capacite=(string)($post['capacite_defaut']??'');
+        $horizon=(string)($post['horizon_reservation_jours']??'');
+        $message=trim((string)($post['message_accueil']??''));
         $errors=[];
-        foreach($allowed as $key=>[$min,$max]) {
-            $value=trim((string)($post[$key]??''));
-            if (mb_strlen($value)<$min || mb_strlen($value)>$max) $errors[]='Valeur invalide : '.$key;
-            if ($key==='contact_public' && $value!=='' && !filter_var($value,FILTER_VALIDATE_EMAIL)) $errors[]='E-mail de contact invalide.';
-            if ($key==='capacite_defaut' && (!ctype_digit($value) || (int)$value<1 || (int)$value>100)) $errors[]='Capacité par défaut invalide.';
-            if ($key==='horizon_reservation_jours' && (!ctype_digit($value) || (int)$value<1 || (int)$value>365)) $errors[]='Horizon de réservation invalide.';
-        }
+        if (mb_strlen($nom)<2 || mb_strlen($nom)>100) $errors[]='Nom de l’organisation invalide.';
+        if ($contact!=='' && (strlen($contact)>190 || !filter_var($contact,FILTER_VALIDATE_EMAIL))) $errors[]='E-mail public invalide.';
+        if (!ctype_digit($capacite) || (int)$capacite<1 || (int)$capacite>100) $errors[]='Capacité par défaut invalide.';
+        if (!ctype_digit($horizon) || (int)$horizon<1 || (int)$horizon>365) $errors[]='Horizon de réservation invalide.';
+        if (mb_strlen($message)<5 || mb_strlen($message)>300) $errors[]='Message d’accueil invalide.';
         if ($errors) return $errors;
-        $q=connexion()->prepare('INSERT INTO parametres (cle,valeur,modifie_par) VALUES (?,?,?) ON DUPLICATE KEY UPDATE valeur=VALUES(valeur),modifie_par=VALUES(modifie_par)');
-        foreach(array_keys($allowed) as $key) $q->execute([$key,trim((string)$post[$key]),$user['id']]);
+        $q=connexion()->prepare('INSERT INTO parametres_responsable (responsable_id,nom_organisation,contact_public,capacite_defaut,horizon_reservation_jours,message_accueil) VALUES (?,?,?,?,?,?) ON DUPLICATE KEY UPDATE nom_organisation=VALUES(nom_organisation),contact_public=VALUES(contact_public),capacite_defaut=VALUES(capacite_defaut),horizon_reservation_jours=VALUES(horizon_reservation_jours),message_accueil=VALUES(message_accueil)');
+        $q->execute([$user['id'],$nom,$contact,(int)$capacite,(int)$horizon,$message]);
         return [];
     }
 }

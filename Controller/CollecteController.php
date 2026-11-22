@@ -5,12 +5,12 @@ final class CollecteController
 {
     public function publiques(): array
     {
-        $q = connexion()->query("SELECT c.*,u.nom AS organisateur FROM collectes c JOIN utilisateurs u ON u.id=c.organisateur_id WHERE c.statut='PUBLIEE' AND c.fin>=NOW() ORDER BY c.debut");
+        $q = connexion()->query("SELECT c.*,u.nom AS organisateur,r.nom_organisation FROM collectes c JOIN utilisateurs u ON u.id=c.organisateur_id LEFT JOIN parametres_responsable r ON r.responsable_id=u.id WHERE c.statut='PUBLIEE' AND c.fin>=NOW() ORDER BY c.debut");
         return $q->fetchAll();
     }
     public function detail(int $id): ?array
     {
-        $q = connexion()->prepare('SELECT c.*,u.nom AS organisateur FROM collectes c JOIN utilisateurs u ON u.id=c.organisateur_id WHERE c.id=?');
+        $q = connexion()->prepare('SELECT c.*,u.nom AS organisateur,r.nom_organisation,r.contact_public,r.message_accueil FROM collectes c JOIN utilisateurs u ON u.id=c.organisateur_id LEFT JOIN parametres_responsable r ON r.responsable_id=u.id WHERE c.id=?');
         $q->execute([$id]);
         $item = $q->fetch();
         if (!$item || ($item['statut'] !== 'PUBLIEE' && !in_array(utilisateur()['role'] ?? '', ['RESPONSABLE','ADMIN'], true))) return null;
@@ -99,11 +99,11 @@ final class CollecteController
         $db = connexion();
         $db->beginTransaction();
         try {
-            $q = $db->prepare("SELECT cr.*,c.statut AS collecte_statut,c.fin AS collecte_fin FROM creneaux cr JOIN collectes c ON c.id=cr.collecte_id WHERE cr.id=? FOR UPDATE");
+            $q = $db->prepare("SELECT cr.*,c.statut AS collecte_statut,c.fin AS collecte_fin,COALESCE(r.horizon_reservation_jours,60) AS horizon_jours FROM creneaux cr JOIN collectes c ON c.id=cr.collecte_id LEFT JOIN parametres_responsable r ON r.responsable_id=c.organisateur_id WHERE cr.id=? FOR UPDATE");
             $q->execute([$creneauId]);
             $cr = $q->fetch();
             if (!$cr || $cr['statut'] !== 'OUVERT' || $cr['collecte_statut'] !== 'PUBLIEE' || strtotime($cr['debut']) <= time()) throw new RuntimeException('Ce créneau n’est plus disponible.');
-            $horizon=(int)$db->query("SELECT valeur FROM parametres WHERE cle='horizon_reservation_jours'")->fetchColumn();
+            $horizon=(int)$cr['horizon_jours'];
             if ($horizon>0 && strtotime($cr['debut'])>time()+$horizon*86400) throw new RuntimeException('Ce créneau est au-delà de l’horizon de réservation autorisé.');
             $q = $db->prepare("SELECT COUNT(*) FROM participations WHERE creneau_id=? AND statut IN ('CONFIRMEE','ARRIVEE')");
             $q->execute([$creneauId]);
