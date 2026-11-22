@@ -95,7 +95,8 @@ final class CollecteController
     {
         $user = exigerConnexion();
         verifierCsrf();
-        if ($user['role']!=='DONNEUR' || !(int)$user['profil_complet']) throw new RuntimeException('Complétez votre profil donneur avant de réserver.');
+        if ($user['role']!=='DONNEUR') throw new RuntimeException('La réservation est réservée aux comptes donneurs. Utilisez un compte donneur pour prendre un créneau.');
+        if (!(int)$user['profil_complet']) throw new RuntimeException('Complétez votre profil donneur avant de réserver.');
         $db = connexion();
         $db->beginTransaction();
         try {

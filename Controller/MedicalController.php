@@ -33,7 +33,10 @@ final class MedicalController
     {
         $value=trim((string)($post[$key]??''));
         if ($value==='') return null;
-        if (!is_numeric($value) || (float)$value<$min || (float)$value>$max) throw new RuntimeException('Valeur invalide : '.$key);
+        if (!is_numeric($value) || (float)$value<$min || (float)$value>$max) {
+            $labels=['tension_systolique'=>'tension systolique','tension_diastolique'=>'tension diastolique','pouls'=>'pouls','temperature_c'=>'température','hemoglobine_g_dl'=>'hémoglobine','poids_kg'=>'poids'];
+            throw new RuntimeException('Vérifiez la '.$labels[$key].' : valeur attendue entre '.$min.' et '.$max.'.');
+        }
         return (float)$value;
     }
     public function resultat(int $id,array $post): void
@@ -65,12 +68,12 @@ final class MedicalController
     }
     public function pourDonneur(int $donneurId): array
     {
-        $q=connexion()->prepare('SELECT p.id,c.titre,c.debut,x.tension_systolique,x.tension_diastolique,x.pouls,x.temperature_c,x.hemoglobine_g_dl,x.poids_kg,x.decision,l.groupe_confirme,l.statut AS resultat_statut,l.statut_prochain_don,l.prochain_don_le,l.vih,l.vhb,l.vhc,l.syphilis FROM participations p JOIN collectes c ON c.id=p.collecte_id LEFT JOIN examens_pre_don x ON x.participation_id=p.id LEFT JOIN resultats_laboratoire l ON l.participation_id=p.id WHERE p.donneur_id=? ORDER BY c.debut DESC');
+        $q=connexion()->prepare('SELECT p.id,p.arrivee_le,d.effectue_le,c.titre,c.debut,x.tension_systolique,x.tension_diastolique,x.pouls,x.temperature_c,x.hemoglobine_g_dl,x.poids_kg,x.decision,x.saisi_le AS examen_saisi_le,l.groupe_confirme,l.statut AS resultat_statut,l.statut_prochain_don,l.prochain_don_le,l.vih,l.vhb,l.vhc,l.syphilis FROM participations p JOIN collectes c ON c.id=p.collecte_id LEFT JOIN dons_sang d ON d.participation_id=p.id LEFT JOIN examens_pre_don x ON x.participation_id=p.id LEFT JOIN resultats_laboratoire l ON l.participation_id=p.id WHERE p.donneur_id=? ORDER BY c.debut DESC');
         $q->execute([$donneurId]); return $q->fetchAll();
     }
     public function pourCollecte(int $collecteId): array
     {
-        $q=connexion()->prepare('SELECT p.id,x.decision,l.statut AS resultat_statut,l.statut_prochain_don,l.prochain_don_le,l.groupe_confirme,l.vih,l.vhb,l.vhc,l.syphilis FROM participations p LEFT JOIN examens_pre_don x ON x.participation_id=p.id LEFT JOIN resultats_laboratoire l ON l.participation_id=p.id WHERE p.collecte_id=?');
+        $q=connexion()->prepare('SELECT p.id,x.decision,x.tension_systolique,x.tension_diastolique,x.pouls,x.temperature_c,x.hemoglobine_g_dl,x.poids_kg,x.saisi_le AS examen_saisi_le,l.statut AS resultat_statut,l.statut_prochain_don,l.prochain_don_le,l.groupe_confirme,l.vih,l.vhb,l.vhc,l.syphilis,l.saisi_le AS resultat_saisi_le FROM participations p LEFT JOIN examens_pre_don x ON x.participation_id=p.id LEFT JOIN resultats_laboratoire l ON l.participation_id=p.id WHERE p.collecte_id=?');
         $q->execute([$collecteId]);
         $map=[]; foreach($q->fetchAll() as $x) $map[$x['id']]=$x;
         return $map;
