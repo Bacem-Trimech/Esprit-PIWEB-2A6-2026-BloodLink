@@ -1,8 +1,11 @@
-<aside class="sidebar">
-  <a class="brand" href="index.php?page=<?= ($current['role'] ?? '') === 'ADMIN' ? 'tableau-bord' : 'gestion-collectes' ?>">
-    <span class="brand-mark">♥</span>
-    <span><strong>BloodLink</strong><small><?= ($current['role'] ?? '') === 'ADMIN' ? 'Portail Administrateur' : 'Centre de Collecte' ?></small></span>
-  </a>
+<aside class="sidebar" id="backoffice-sidebar">
+  <div class="sidebar-brand-row">
+    <a class="brand" href="index.php?page=<?= ($current['role'] ?? '') === 'ADMIN' ? 'tableau-bord' : 'gestion-collectes' ?>">
+      <span class="brand-mark">♥</span>
+      <span><strong>BloodLink</strong><small><?= ($current['role'] ?? '') === 'ADMIN' ? 'Portail Administrateur' : 'Centre de Collecte' ?></small></span>
+    </a>
+    <button type="button" class="sidebar-collapse-mini" data-toggle-sidebar aria-label="Replier le menu latéral" title="Replier le menu">«</button>
+  </div>
   <?php if (($current['role'] ?? '') === 'ADMIN'): ?>
   <div class="sidebar-label">SUPERVISION & ANALYTIQUE</div>
   <nav class="side-nav">

@@ -36,10 +36,10 @@ final class TableauBordController
         $condEcarte = "l.statut='CONTACT_CENTRE' OR l.vih='A_CONFIRMER' OR l.vhb='A_CONFIRMER' OR l.vhc='A_CONFIRMER' OR l.syphilis='A_CONFIRMER'";
 
         $volumeValideMl = (int)$db->query("SELECT COALESCE(SUM(d.volume_ml),0) FROM dons_sang d JOIN resultats_laboratoire l ON l.participation_id=d.participation_id WHERE {$condSain}")->fetchColumn();
-        $pochesValidees = (int)$db->query("SELECT COUNT(*) FROM dons_sang d JOIN resultats_laboratoire l ON l.participation_id=d.participation_id WHERE {$condSain}")->fetchColumn();
+        $pochesValidees = (int)$db->query("SELECT COALESCE(SUM(GREATEST(1, ROUND(d.volume_ml / 450))),0) FROM dons_sang d JOIN resultats_laboratoire l ON l.participation_id=d.participation_id WHERE {$condSain}")->fetchColumn();
         $volumeEcarteMl = (int)$db->query("SELECT COALESCE(SUM(d.volume_ml),0) FROM dons_sang d JOIN resultats_laboratoire l ON l.participation_id=d.participation_id WHERE {$condEcarte}")->fetchColumn();
         $volumeInconnuMl = max(0, $volumeTotalMl - $volumeValideMl - $volumeEcarteMl);
-        $pochesInconnues = (int)$db->query("SELECT COUNT(*) FROM dons_sang d LEFT JOIN resultats_laboratoire l ON l.participation_id=d.participation_id WHERE l.participation_id IS NULL OR NOT ({$condSain}) AND NOT ({$condEcarte})")->fetchColumn();
+        $pochesInconnues = (int)$db->query("SELECT COALESCE(SUM(GREATEST(1, ROUND(d.volume_ml / 450))),0) FROM dons_sang d LEFT JOIN resultats_laboratoire l ON l.participation_id=d.participation_id WHERE l.participation_id IS NULL OR NOT ({$condSain}) AND NOT ({$condEcarte})")->fetchColumn();
 
         $sosActives = (int)$db->query('SELECT COUNT(*) FROM alertes_sos WHERE expire_le>NOW() AND supprime_le IS NULL')->fetchColumn();
         $pagesVues = (int)$db->query('SELECT COALESCE(SUM(vues),0) FROM statistiques_jour')->fetchColumn();
@@ -166,8 +166,9 @@ final class TableauBordController
                 $libelleGroupe = 'En attente / Inconnu';
             }
 
+            $nbPochesRow = DonSang::compterPoches($vol);
             if (isset($groupesBase[$gKey])) {
-                $groupesBase[$gKey]['poches']++;
+                $groupesBase[$gKey]['poches'] += $nbPochesRow;
                 $groupesBase[$gKey]['volume_ml'] += $vol;
             }
 
@@ -179,7 +180,7 @@ final class TableauBordController
                     'volume_ml' => 0,
                 ];
             }
-            $groupesParCollecte[$cid][$gKey]['poches']++;
+            $groupesParCollecte[$cid][$gKey]['poches'] += $nbPochesRow;
             $groupesParCollecte[$cid][$gKey]['volume_ml'] += $vol;
 
             $suiviDonneur = $donneursSuivi[(int)$row['donneur_id']] ?? null;

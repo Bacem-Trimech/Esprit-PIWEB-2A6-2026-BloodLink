@@ -3,6 +3,16 @@ declare(strict_types=1);
 
 final class DonSang
 {
+    public const VOLUME_POCHE_DEFAUT = 450;
+
+    public static function compterPoches(int $volumeMl): int
+    {
+        if ($volumeMl <= 0) {
+            return 0;
+        }
+        return max(1, (int)round($volumeMl / self::VOLUME_POCHE_DEFAUT));
+    }
+
     public function __construct(
         private ?int $id = null,
         private int $participationId = 0,

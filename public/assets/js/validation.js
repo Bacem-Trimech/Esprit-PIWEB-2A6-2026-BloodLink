@@ -64,7 +64,7 @@ window.bloodlinkInitValidation=()=>{
         const cap=Number(value('capacite_defaut'));
         if(!/^[0-9]+$/.test(value('capacite_defaut'))||cap<1||cap>100) add('capacite_defaut','Indiquez un nombre de places entre 1 et 100.');
       }
-      if(kind==='don'&&(Number(value('volume_ml'))<420||Number(value('volume_ml'))>480)) add('volume_ml','Indiquez un volume de 420 à 480 ml.');
+      if(kind==='don'&&(Number(value('volume_ml'))<420||Number(value('volume_ml'))>1800)) add('volume_ml','Sélectionnez un nombre de poches valide (1 poche = 450 ml par défaut, jusqu’à 4 poches).');
       if(kind==='scan'&&!/^[A-Fa-f0-9]{48}$/.test(value('code'))) add('code','Code QR invalide.');
       if(kind==='collecte'){
         if(value('titre').length<3||value('titre').length>160) add('titre','Titre invalide (3 à 160 caractères).');

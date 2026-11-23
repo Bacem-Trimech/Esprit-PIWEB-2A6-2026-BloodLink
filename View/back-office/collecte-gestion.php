@@ -11,6 +11,7 @@ foreach ($participations as $part) {
     if (!empty($part['effectue_le'])) {
         $nbDons++;
         $v = (int)($part['volume_ml'] ?? 0);
+        $nbPochesPart = DonSang::compterPoches($v);
         $volCollecte += $v;
         $mPart = $medicalMap[$part['id']] ?? [];
         $estSain = (($mPart['resultat_statut'] ?? '') === 'VALIDE')
@@ -29,20 +30,20 @@ foreach ($participations as $part) {
                 $groupesCollecteBilan[$gKey] = ['groupe' => $gKey, 'etat' => 'SAIN', 'volume_ml' => 0, 'poches' => 0];
             }
             $groupesCollecteBilan[$gKey]['volume_ml'] += $v;
-            $groupesCollecteBilan[$gKey]['poches']++;
+            $groupesCollecteBilan[$gKey]['poches'] += $nbPochesPart;
         } elseif ($estEcarte) {
             if (!isset($groupesCollecteBilan['ECARTE'])) {
                 $groupesCollecteBilan['ECARTE'] = ['groupe' => 'Écarté (contrôle)', 'etat' => 'ECARTE', 'volume_ml' => 0, 'poches' => 0];
             }
             $groupesCollecteBilan['ECARTE']['volume_ml'] += $v;
-            $groupesCollecteBilan['ECARTE']['poches']++;
+            $groupesCollecteBilan['ECARTE']['poches'] += $nbPochesPart;
         } else {
             $volInconnuCollecte += $v;
             if (!isset($groupesCollecteBilan['INCONNU'])) {
                 $groupesCollecteBilan['INCONNU'] = ['groupe' => 'Groupe inconnu / En attente labo', 'etat' => 'INCONNU', 'volume_ml' => 0, 'poches' => 0];
             }
             $groupesCollecteBilan['INCONNU']['volume_ml'] += $v;
-            $groupesCollecteBilan['INCONNU']['poches']++;
+            $groupesCollecteBilan['INCONNU']['poches'] += $nbPochesPart;
         }
     }
 }
@@ -209,12 +210,14 @@ $nextSlotEndInput = date('Y-m-d\TH:i', $nextSlotEndTs);
               <?php endif; ?>
             </td>
             <td>
-              <?php if ($p['effectue_le']): ?>
-                <strong class="blood-volume-highlight"><?= (int)$p['volume_ml'] ?> ml</strong> ·
+              <?php if ($p['effectue_le']):
+                $nbPochesRow = DonSang::compterPoches((int)$p['volume_ml']);
+              ?>
+                <strong class="blood-volume-highlight"><?= $nbPochesRow ?> poche<?= $nbPochesRow > 1 ? 's' : '' ?> (<?= (int)$p['volume_ml'] ?> ml)</strong> ·
                 <?php if ($estSainRow): ?>
                   <span class="blood-chip blood-chip-sain"><strong>✓ <?= e($m['groupe_confirme']) ?> (Sain)</strong></span>
                 <?php else: ?>
-                  <span class="badge-inline badge-warn">⏳ Groupe à confirmer au labo</span>
+                  <span class="badge-inline badge-warn">⏳ En attente labo</span>
                 <?php endif; ?>
                 <small><?= e(date('d/m/Y H:i', strtotime($p['effectue_le']))) ?> · <code><?= e($p['numero_poche']) ?></code></small>
               <?php elseif (($m['decision'] ?? '') === 'AJOURNE'): ?>
@@ -298,17 +301,18 @@ $nextSlotEndInput = date('Y-m-d\TH:i', $nextSlotEndTs);
             </p>
           </div>
           <div class="clinical-row-steps">
+            <?php $nbPochesBtn = $p['effectue_le'] ? DonSang::compterPoches((int)$p['volume_ml']) : 1; ?>
             <button type="button" class="step-btn <?= $decision==='APTE'?'step-done':($decision==='AJOURNE'?'step-warn':'') ?>" data-open-modal="modal-medical-<?= (int)$p['id'] ?>">
               <small>1. Examen avant don</small>
               <strong><?= $decision==='APTE'?'✓ Apte':($decision==='AJOURNE'?'✕ Ajourné':'À compléter') ?></strong>
             </button>
             <button type="button" class="step-btn <?= $p['effectue_le']?'step-done':'' ?>" data-open-modal="modal-don-<?= (int)$p['id'] ?>" <?= $decision!=='APTE' && !$p['effectue_le'] ? 'disabled title="Validez d’abord l’examen en Apte"' : '' ?>>
-              <small>2. Prélèvement & Heure</small>
-              <strong><?= $p['effectue_le'] ? (int)$p['volume_ml'] . ' ml prélevés' : 'Confirmer volume' ?></strong>
+              <small>2. Poches & Heure</small>
+              <strong><?= $p['effectue_le'] ? $nbPochesBtn . ' poche' . ($nbPochesBtn > 1 ? 's' : '') . ' (' . (int)$p['volume_ml'] . ' ml)' : 'Choisir poches' ?></strong>
             </button>
             <button type="button" class="step-btn <?= $estSainCard?'step-done':(($m['resultat_statut']??'')==='CONTACT_CENTRE'?'step-warn':'') ?>" data-open-modal="modal-labo-<?= (int)$p['id'] ?>" <?= !$p['effectue_le'] ? 'disabled title="Nécessite un don confirmé"' : '' ?>>
               <small>3. Labo (Groupe & Sain)</small>
-              <strong><?= $estSainCard ? '✓ ' . e($m['groupe_confirme']) . ' (Sain)' : (($m['resultat_statut']??'')==='CONTACT_CENTRE'?'Écarté / Contact':'À confirmer') ?></strong>
+              <strong><?= $estSainCard ? '✓ ' . e($m['groupe_confirme']) . ' (Sain)' : (($m['resultat_statut']??'')==='CONTACT_CENTRE'?'Écarté / Contact':'En attente labo') ?></strong>
             </button>
           </div>
         </article>
@@ -461,9 +465,27 @@ $nextSlotEndInput = date('Y-m-d\TH:i', $nextSlotEndTs);
           <input id="saisi-le-<?= $pid ?>" type="datetime-local" name="saisi_le" value="<?= e($examenInput) ?>">
         </div>
       </div>
+      <?php
+        $curVol = (int)($p['volume_ml'] ?: 450);
+        $pochesOptions = [
+            450  => '1 poche standard (450 ml — Défaut)',
+            900  => '2 poches (900 ml)',
+            1350 => '3 poches (1 350 ml)',
+            1800 => '4 poches (1 800 ml)',
+        ];
+        if (!isset($pochesOptions[$curVol])) {
+            $nbP = DonSang::compterPoches($curVol);
+            $pochesOptions[$curVol] = $nbP . ' poche' . ($nbP > 1 ? 's' : '') . ' (' . $curVol . ' ml)';
+            ksort($pochesOptions);
+        }
+      ?>
       <div class="field">
-        <label for="exam-vol-<?= $pid ?>">Volume de la poche si déclaré Apte (420 à 480 ml)</label>
-        <input id="exam-vol-<?= $pid ?>" name="volume_ml" type="number" min="420" max="480" value="<?= (int)($p['volume_ml'] ?: 450) ?>">
+        <label for="exam-vol-<?= $pid ?>">Nombre de poches prélevées si déclaré Apte (1 poche = 450 ml par défaut)</label>
+        <select id="exam-vol-<?= $pid ?>" name="volume_ml">
+          <?php foreach ($pochesOptions as $vOpt => $lOpt): ?>
+            <option value="<?= (int)$vOpt ?>" <?= $curVol === (int)$vOpt ? 'selected' : '' ?>><?= e($lOpt) ?></option>
+          <?php endforeach; ?>
+        </select>
       </div>
       <div class="modal-footer">
         <button type="button" class="button button-quiet" data-close-modal>Fermer</button>
@@ -477,7 +499,7 @@ $nextSlotEndInput = date('Y-m-d\TH:i', $nextSlotEndTs);
 <div class="modal-backdrop" id="modal-don-<?= $pid ?>" hidden>
   <div class="modal-card modal-card-sm" role="dialog" aria-modal="true">
     <header class="modal-header">
-      <div><span class="eyebrow">ÉTAPE 2 · PRÉLÈVEMENT SANGUIN</span><h3>Volume et heure du don — <?= e($p['nom']) ?></h3></div>
+      <div><span class="eyebrow">ÉTAPE 2 · PRÉLÈVEMENT SANGUIN</span><h3>Poches prélevées et heure du don — <?= e($p['nom']) ?></h3></div>
       <button type="button" class="modal-close" data-close-modal aria-label="Fermer">✕</button>
     </header>
     <form method="post" action="index.php?page=confirmer-don" data-validate="don" class="compact-form">
@@ -485,8 +507,12 @@ $nextSlotEndInput = date('Y-m-d\TH:i', $nextSlotEndTs);
       <input type="hidden" name="collecte_id" value="<?= (int)$detail['id'] ?>">
       <input type="hidden" name="participation_id" value="<?= $pid ?>">
       <div class="field">
-        <label for="don-vol-<?= $pid ?>">Volume réellement prélevé (420 à 480 ml)</label>
-        <input id="don-vol-<?= $pid ?>" name="volume_ml" type="number" min="420" max="480" value="<?= (int)($p['volume_ml'] ?: 450) ?>">
+        <label for="don-vol-<?= $pid ?>">Nombre de poches prélevées (1 poche standard = 450 ml par défaut)</label>
+        <select id="don-vol-<?= $pid ?>" name="volume_ml">
+          <?php foreach ($pochesOptions as $vOpt => $lOpt): ?>
+            <option value="<?= (int)$vOpt ?>" <?= $curVol === (int)$vOpt ? 'selected' : '' ?>><?= e($lOpt) ?></option>
+          <?php endforeach; ?>
+        </select>
       </div>
       <div class="field">
         <label for="don-time-<?= $pid ?>">Date et heure du prélèvement (pré-remplie, modifiable)</label>
@@ -507,7 +533,7 @@ $nextSlotEndInput = date('Y-m-d\TH:i', $nextSlotEndTs);
       <div><span class="eyebrow">ÉTAPE 3 · QUALIFICATION BIOLOGIQUE DE LA POCHE</span><h3>Groupe sanguin & dépistages — <?= e($p['nom']) ?></h3></div>
       <button type="button" class="modal-close" data-close-modal aria-label="Fermer">✕</button>
     </header>
-    <p class="muted">Lorsque le groupe est renseigné, que les 4 dépistages sont « Non réactif » (aucune infection) et que le statut est « Validé », la poche (<?= (int)($p['volume_ml'] ?: 450) ?> ml) passe de « Groupe inconnu » à ce groupe sanguin confirmé dans les statistiques.</p>
+    <p class="muted">Lorsque le groupe est renseigné, que les 4 dépistages sont « Négatif / Sain (Aucune infection) » et que le statut est « Validé », le prélèvement (<?= (int)($p['volume_ml'] ?: 450) ?> ml) est comptabilisé dans ce groupe sanguin confirmé.</p>
     <form method="post" action="index.php?page=resultat-sauver" data-validate="resultat" class="compact-form">
       <input type="hidden" name="csrf" value="<?= e(jetonCsrf()) ?>">
       <input type="hidden" name="collecte_id" value="<?= (int)$detail['id'] ?>">
@@ -534,7 +560,7 @@ $nextSlotEndInput = date('Y-m-d\TH:i', $nextSlotEndTs);
         <div class="field">
           <label><?= e($label) ?></label>
           <select name="<?= e($key) ?>">
-            <?php foreach (['EN_ATTENTE'=>'En attente','NON_REACTIF'=>'Non réactif (Sain)','A_CONFIRMER'=>'À confirmer'] as $val=>$lib): ?>
+            <?php foreach (['EN_ATTENTE'=>'En attente d’analyse','NON_REACTIF'=>'Négatif / Sain (Aucune infection)','A_CONFIRMER'=>'Positif / Anomalie détectée (Poche écartée)'] as $val=>$lib): ?>
               <option value="<?= e($val) ?>" <?= ($m[$key]??'EN_ATTENTE')===$val?'selected':'' ?>><?= e($lib) ?></option>
             <?php endforeach; ?>
           </select>

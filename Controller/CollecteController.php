@@ -182,7 +182,7 @@ final class CollecteController
             if (!isset($groupesMap[$cid][$key])) {
                 $groupesMap[$cid][$key] = ['groupe' => $key, 'etat' => $etat, 'poches' => 0, 'volume_ml' => 0];
             }
-            $groupesMap[$cid][$key]['poches']++;
+            $groupesMap[$cid][$key]['poches'] += DonSang::compterPoches($vol);
             $groupesMap[$cid][$key]['volume_ml'] += $vol;
         }
 
@@ -640,8 +640,11 @@ final class CollecteController
         $user = exigerRole(['RESPONSABLE','ADMIN']);
         verifierCsrf();
         $this->autoriserParticipation($id, $user);
-        if ($volumeMl < 420 || $volumeMl > 480) {
-            throw new RuntimeException('Indiquez le volume réellement prélevé, entre 420 et 480 ml pour ce don de sang total.');
+        if ($volumeMl <= 0) {
+            $volumeMl = DonSang::VOLUME_POCHE_DEFAUT;
+        }
+        if ($volumeMl < 420 || $volumeMl > 1800) {
+            throw new RuntimeException('Sélectionnez un nombre de poches valide (1 poche standard = 450 ml par défaut, jusqu’à 4 poches / 1 800 ml).');
         }
 
         $qCheck = connexion()->prepare("SELECT p.id, p.arrivee_le FROM participations p JOIN examens_pre_don x ON x.participation_id=p.id WHERE p.id=? AND p.statut='ARRIVEE' AND x.decision='APTE'");

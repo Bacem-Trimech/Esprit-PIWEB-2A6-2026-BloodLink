@@ -273,6 +273,63 @@ window.bloodlinkInitExperience=()=>{
     });
   });
 
+  // Bouton de repli / affichage de la barre latérale gauche (Admin & Responsable)
+  if(localStorage.getItem('bloodlink_sidebar_collapsed')==='1'){
+    document.body.classList.add('sidebar-collapsed');
+  }
+  document.querySelectorAll('[data-toggle-sidebar]').forEach(btn=>{
+    if(btn.dataset.sidebarBound) return;
+    btn.dataset.sidebarBound='1';
+    btn.addEventListener('click',()=>{
+      const collapsed=document.body.classList.toggle('sidebar-collapsed');
+      localStorage.setItem('bloodlink_sidebar_collapsed',collapsed?'1':'0');
+    });
+  });
+
+  // Réinitialise les formulaires non sauvegardés d'une fenêtre modale lorsqu'on la ferme sans enregistrer
+  function resetModalForms(modal){
+    if(!modal) return;
+    modal.querySelectorAll('form').forEach(form=>{
+      form.reset();
+      form.querySelectorAll('.field-error,.notice').forEach(el=>el.remove());
+      form.querySelectorAll('input[data-clock24-ready]').forEach(input=>{
+        input.value=input.defaultValue;
+        const widget=input.nextElementSibling;
+        if(widget&&widget.classList.contains('datetime-24h-widget')){
+          const raw=(input.defaultValue||'').replace(' ','T');
+          const [initDate='',initTime='09:00']=raw.split('T');
+          const [initH='09',initM='00']=initTime.slice(0,5).split(':');
+          const dateEl=widget.querySelector('.dt24-date');
+          const hourEl=widget.querySelector('.dt24-hour');
+          const minEl=widget.querySelector('.dt24-min');
+          if(dateEl) dateEl.value=initDate;
+          if(hourEl) hourEl.value=initH;
+          if(minEl) minEl.value=String(Number(initM)||0).padStart(2,'0');
+        }
+      });
+    });
+  }
+  window.bloodlinkResetModal=resetModalForms;
+
+  // Synchronisation automatique du statut labo si un dépistage est marqué Positif / Anomalie (A_CONFIRMER)
+  document.querySelectorAll('form[data-validate="resultat"]').forEach(form=>{
+    if(form.dataset.labSyncBound) return;
+    form.dataset.labSyncBound='1';
+    const testNames=['vih','vhb','vhc','syphilis'];
+    const statutSelect=form.elements.namedItem('statut');
+    const suiviSelect=form.elements.namedItem('statut_prochain_don');
+    testNames.forEach(name=>{
+      const sel=form.elements.namedItem(name);
+      sel?.addEventListener('change',()=>{
+        const vals=testNames.map(k=>form.elements.namedItem(k)?.value||'EN_ATTENTE');
+        if(vals.includes('A_CONFIRMER')){
+          if(statutSelect) statutSelect.value='CONTACT_CENTRE';
+          if(suiviSelect && suiviSelect.value==='AUTORISE') suiviSelect.value='NON_AUTORISE';
+        }
+      });
+    });
+  });
+
   // Ouverture / fermeture des fenêtres modales cliniques et détails de collecte
   document.querySelectorAll('[data-open-modal]').forEach(btn=>{
     if(btn.dataset.modalBound) return;
@@ -280,6 +337,7 @@ window.bloodlinkInitExperience=()=>{
     btn.addEventListener('click',()=>{
       const modal=document.getElementById(btn.dataset.openModal);
       if(modal){
+        resetModalForms(modal);
         modal.hidden=false;
         modal.querySelector('input:not([type="hidden"]),select,textarea,button')?.focus();
       }
@@ -300,7 +358,10 @@ window.bloodlinkInitExperience=()=>{
     btn.dataset.closeBound='1';
     btn.addEventListener('click',()=>{
       const modal=btn.closest('.modal-backdrop');
-      if(modal) modal.hidden=true;
+      if(modal){
+        resetModalForms(modal);
+        modal.hidden=true;
+      }
     });
   });
 
@@ -308,7 +369,10 @@ window.bloodlinkInitExperience=()=>{
     if(backdrop.dataset.backdropBound) return;
     backdrop.dataset.backdropBound='1';
     backdrop.addEventListener('click',e=>{
-      if(e.target===backdrop) backdrop.hidden=true;
+      if(e.target===backdrop){
+        resetModalForms(backdrop);
+        backdrop.hidden=true;
+      }
     });
   });
 
@@ -342,6 +406,9 @@ window.bloodlinkInitExperience=()=>{
 document.addEventListener('DOMContentLoaded',window.bloodlinkInitExperience);
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
-    document.querySelectorAll('.modal-backdrop:not([hidden])').forEach(m=>{m.hidden=true;});
+    document.querySelectorAll('.modal-backdrop:not([hidden])').forEach(m=>{
+      window.bloodlinkResetModal?.(m);
+      m.hidden=true;
+    });
   }
 });

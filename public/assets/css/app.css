@@ -357,7 +357,17 @@ body{color:#17243a;background:#f2eaed}
 .table-wrap{border:1.5px solid #d8cad0!important;box-shadow:0 4px 14px rgba(32,20,28,.04)}
 .site-header{background:rgba(255,255,255,.94)!important;border-bottom:1.5px solid #dfd0d5!important}
 .admin-topbar{background:#fff;min-height:58px;border-bottom:1.5px solid #d6dde8!important}
-.sidebar{background:#fff;border-right:1.5px solid #d6dde8!important}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.sidebar-toggle-btn{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:10px;border:1.5px solid #cbd5e1;background:#fff;color:#334155;cursor:pointer;transition:background-color .16s ease,color .16s ease,border-color .16s ease,transform .16s ease}
+.sidebar-toggle-btn:hover{background:#fff0f2;color:#d92735;border-color:#f2b6be;transform:translateY(-1px)}
+.sidebar-brand-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px 26px}
+.sidebar-brand-row .brand{padding:0!important}
+.sidebar-collapse-mini{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;border:1px solid #d6dde8;background:#fff;color:#64748b;font-weight:800;font-size:14px;cursor:pointer;transition:background-color .15s ease,color .15s ease}
+.sidebar-collapse-mini:hover{background:#fff0f2;color:#d92735;border-color:#f2b6be}
+.sidebar{background:#fff;border-right:1.5px solid #d6dde8!important;transition:transform .24s cubic-bezier(.4,0,.2,1),opacity .2s ease}
+.admin-main{min-width:0;transition:margin-left .24s cubic-bezier(.4,0,.2,1)}
+body.sidebar-collapsed .sidebar{transform:translateX(-100%);opacity:0;pointer-events:none}
+body.sidebar-collapsed .admin-main{margin-left:0!important}
 .side-nav a:first-child{background:transparent;color:#556070}
 .side-nav a[aria-current="page"],.side-nav a:hover{background:#fff0f2!important;color:#c91c2f!important}
 .side-nav .public-preview{margin-top:16px;border:1.5px solid #e0c8cc;color:#9b2632}
@@ -407,6 +417,7 @@ body{color:#17243a;background:#f2eaed}
 }
 @media(max-width:900px){
   .sidebar{position:static;width:auto;padding:14px 18px;min-height:0;border-right:0;border-bottom:1px solid #e9edf2}
+  body.sidebar-collapsed .sidebar{display:none}
   .sidebar .brand{padding:0 4px 10px}.sidebar-label,.sidebar-note{display:none}
   .side-nav{display:flex;overflow-x:auto;gap:8px}.side-nav a{flex:0 0 auto;white-space:nowrap}
   .admin-main{margin-left:0}.page-content{padding:20px 18px 40px}

@@ -74,14 +74,14 @@ final class MedicalController
             $examen->getSaisiLe(),
         ]);
 
-        // Lorsqu'un donneur est vérifié APTE au prélèvement, le don (450 ml par défaut ou volume saisi) est automatiquement comptabilisé dans la collecte
-        if ($decision === 'APTE' && !$donExiste) {
-            $volInput = isset($post['volume_ml']) && trim((string)$post['volume_ml']) !== '' ? (int)$post['volume_ml'] : 450;
-            if ($volInput < 420 || $volInput > 480) {
-                $volInput = 450;
+        // Lorsqu'un donneur est vérifié APTE au prélèvement, le don (1 poche = 450 ml par défaut ou nombre de poches choisi) est automatiquement comptabilisé dans la collecte
+        if ($decision === 'APTE') {
+            $volInput = isset($post['volume_ml']) && trim((string)$post['volume_ml']) !== '' ? (int)$post['volume_ml'] : DonSang::VOLUME_POCHE_DEFAUT;
+            if ($volInput < 420 || $volInput > 1800) {
+                $volInput = DonSang::VOLUME_POCHE_DEFAUT;
             }
             $effectueLe = !empty($p['arrivee_le']) ? (string)$p['arrivee_le'] : $saisiLe;
-            $qDon = connexion()->prepare('INSERT IGNORE INTO dons_sang (participation_id,effectue_le,confirme_par,volume_ml,numero_poche) VALUES (?,?,?,?,?)');
+            $qDon = connexion()->prepare('INSERT INTO dons_sang (participation_id,effectue_le,confirme_par,volume_ml,numero_poche) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE volume_ml=VALUES(volume_ml)');
             $qDon->execute([
                 $id,
                 $effectueLe,
