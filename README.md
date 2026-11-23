@@ -77,12 +77,11 @@ Projet développé à **Esprit School of Engineering** dans le cadre du module *
 
 ## Contributors
 
-Développement collaboratif par l’équipe **2A6** autour des branches :
-- `BloodLink`
-- `AnnuaireMedicale`
-- `RendezVous`
-- `Pharmacies`
-- `Laboratoires`
+- **Bacem Trimech** — `BloodLink`
+- **Khalil Talbi** — `AnnuaireMedicale`
+- **Hedia Ben Nacer** — `RendezVous`
+- **Aala Werchfani** — `Pharmacies`
+- **Iyed Khlil** — `Laboratoires`
 
 ## Acknowledgments
 
