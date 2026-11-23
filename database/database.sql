@@ -154,3 +154,118 @@ CREATE TABLE IF NOT EXISTS parametres_responsable (
 ALTER TABLE resultats_laboratoire
   ADD COLUMN statut_prochain_don ENUM('EN_COURS','AUTORISE','NON_AUTORISE') NOT NULL DEFAULT 'EN_COURS',
   ADD COLUMN prochain_don_le DATE NULL;
+
+
+-- =========================================================================
+-- INTÉGRATION DES 4 AUTRES MODULES DU PORTAIL SANTÉ (ANNUAIRE, RDV, PHARMACIES, LABO)
+-- =========================================================================
+
+CREATE TABLE IF NOT EXISTS etablissements_sante (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(160) NOT NULL UNIQUE,
+  type ENUM('hopital','clinique','polyclinique','pharmacie','laboratoire') NOT NULL DEFAULT 'hopital',
+  ville VARCHAR(100) NOT NULL,
+  adresse VARCHAR(255) NOT NULL,
+  telephone VARCHAR(30) NULL,
+  email VARCHAR(160) NULL,
+  description TEXT NULL,
+  cree_le TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_etab_type_ville (type, ville)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS services_medicaux (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  etablissement_id INT UNSIGNED NOT NULL,
+  nom VARCHAR(120) NOT NULL,
+  specialite VARCHAR(120) NOT NULL,
+  horaires VARCHAR(120) NULL,
+  telephone VARCHAR(30) NULL,
+  est_urgence TINYINT(1) NOT NULL DEFAULT 0,
+  description TEXT NULL,
+  CONSTRAINT fk_service_etab FOREIGN KEY (etablissement_id) REFERENCES etablissements_sante(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS praticiens (
+  id_praticien INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(100) NOT NULL,
+  prenom VARCHAR(100) NOT NULL,
+  specialite VARCHAR(100) NOT NULL,
+  telephone VARCHAR(30) NULL,
+  email VARCHAR(150) NULL,
+  adresse VARCHAR(255) NULL,
+  etablissement_id INT UNSIGNED NULL,
+  CONSTRAINT fk_praticien_etab FOREIGN KEY (etablissement_id) REFERENCES etablissements_sante(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS rendez_vous (
+  id_rendezvous INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  date_rendezvous DATE NOT NULL,
+  heure_rendezvous TIME NOT NULL,
+  motif VARCHAR(500) NOT NULL,
+  statut ENUM('En attente','Confirmé','Annulé','Terminé') NOT NULL DEFAULT 'En attente',
+  id_praticien INT UNSIGNED NOT NULL,
+  utilisateur_id BIGINT UNSIGNED NULL,
+  patient_nom VARCHAR(120) NULL,
+  patient_telephone VARCHAR(30) NULL,
+  cree_le TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_rdv_praticien FOREIGN KEY (id_praticien) REFERENCES praticiens(id_praticien) ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT fk_rdv_utilisateur FOREIGN KEY (utilisateur_id) REFERENCES utilisateurs(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS medicaments (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  dci VARCHAR(120) NULL,
+  form VARCHAR(60) NOT NULL,
+  dosage VARCHAR(60) NULL,
+  requires_prescription TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_medicament (name, dosage, form)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS gardes_pharmacie (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  etablissement_id INT UNSIGNED NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  notes VARCHAR(200) NULL,
+  CONSTRAINT fk_garde_etab FOREIGN KEY (etablissement_id) REFERENCES etablissements_sante(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS disponibilites (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  etablissement_id INT UNSIGNED NOT NULL,
+  medicament_id INT UNSIGNED NOT NULL,
+  quantity INT UNSIGNED NOT NULL DEFAULT 0,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_dispo (etablissement_id, medicament_id),
+  CONSTRAINT fk_dispo_etab FOREIGN KEY (etablissement_id) REFERENCES etablissements_sante(id) ON DELETE CASCADE,
+  CONSTRAINT fk_dispo_med FOREIGN KEY (medicament_id) REFERENCES medicaments(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS analyse_medicale (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nom VARCHAR(120) NOT NULL,
+  description VARCHAR(255) NOT NULL,
+  type_echantillon VARCHAR(40) NOT NULL,
+  prix DECIMAL(10,2) NOT NULL,
+  delai_heures INT UNSIGNED NOT NULL,
+  a_jeun TINYINT(1) NOT NULL DEFAULT 0,
+  etablissement_id INT UNSIGNED NULL,
+  date_ajout DATE NOT NULL,
+  CONSTRAINT fk_analyse_etab FOREIGN KEY (etablissement_id) REFERENCES etablissements_sante(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS compte_rendu_analyse (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  id_analyse INT UNSIGNED NOT NULL,
+  utilisateur_id BIGINT UNSIGNED NULL,
+  nom_patient VARCHAR(120) NOT NULL,
+  date_prelevement DATE NOT NULL,
+  resultat TEXT NOT NULL,
+  interpretation ENUM('Normal','Anormal') NOT NULL DEFAULT 'Normal',
+  commentaire VARCHAR(255) NULL,
+  date_creation DATE NOT NULL,
+  CONSTRAINT fk_cr_analyse FOREIGN KEY (id_analyse) REFERENCES analyse_medicale(id) ON DELETE CASCADE,
+  CONSTRAINT fk_cr_utilisateur FOREIGN KEY (utilisateur_id) REFERENCES utilisateurs(id) ON DELETE SET NULL
+) ENGINE=InnoDB;

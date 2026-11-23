@@ -1,27 +1,30 @@
 <?php
+declare(strict_types=1);
+
 /**
- * PharmacieService: ALL the SQL of the Pharmacies module (prepared statements only).
- * Main JOIN: pharmacies on duty today that declare a medicine in stock
- * (etablissements_sante + gardes_pharmacie + disponibilites + medicaments).
+ * PharmacieService : requêtes PDO préparées du module Pharmacies & Médicaments
+ * reliées à la table partagée etablissements_sante (type = 'pharmacie').
  */
-class PharmacieService
+final class PharmacieService
 {
     private PDO $db;
     private const DUTY_TODAY = 'CURDATE() BETWEEN g.start_date AND g.end_date';
 
-    public function __construct() { $this->db = Database::getConnexion(); }
+    public function __construct()
+    {
+        $this->db = Database::getConnexion();
+    }
 
-    // ---------------------------------------------------------------- pharmacies (read only)
     /** @return EtablissementSante[] */
     public function pharmacies(): array
     {
-        $rows = $this->db->query("SELECT * FROM etablissements_sante WHERE type = 'pharmacie' ORDER BY name")->fetchAll();
-        return array_map(fn(array $r) => EtablissementSante::fromArray($r), $rows);
+        $rows = $this->db->query("SELECT * FROM etablissements_sante WHERE type = 'pharmacie' ORDER BY nom ASC")->fetchAll();
+        return array_map(static fn(array $r): EtablissementSante => EtablissementSante::fromArray($r), $rows);
     }
 
     public function cities(): array
     {
-        return $this->db->query("SELECT DISTINCT city FROM etablissements_sante WHERE type = 'pharmacie' ORDER BY city")->fetchAll(PDO::FETCH_COLUMN);
+        return $this->db->query("SELECT DISTINCT ville FROM etablissements_sante WHERE type = 'pharmacie' ORDER BY ville ASC")->fetchAll(PDO::FETCH_COLUMN);
     }
 
     private function dutyUntil(): string
@@ -34,49 +37,50 @@ class PharmacieService
         return ' AND EXISTS (SELECT 1 FROM gardes_pharmacie g WHERE g.etablissement_id = e.id AND ' . self::DUTY_TODAY . ')';
     }
 
-    /** Public list of pharmacies with their duty status. @return array[] */
-    public function listPharmacies(string $city, bool $onDuty): array
+    public function listPharmacies(string $city = '', bool $onDuty = false): array
     {
-        $sql = 'SELECT e.*, ' . $this->dutyUntil() . " AS duty_until FROM etablissements_sante e WHERE e.type = 'pharmacie'";
+        $sql = 'SELECT e.*, ' . $this->dutyUntil() . " AS duty_until,
+                       (SELECT COUNT(*) FROM disponibilites d WHERE d.etablissement_id = e.id AND d.quantity > 0) AS nb_meds_dispo
+                FROM etablissements_sante e WHERE e.type = 'pharmacie'";
         $p = [];
-        if ($city !== '') { $sql .= ' AND e.city = :city'; $p['city'] = $city; }
-        if ($onDuty) $sql .= $this->onDutyFilter();
-        $stmt = $this->db->prepare($sql . ' ORDER BY e.name');
+        if ($city !== '') {
+            $sql .= ' AND e.ville = :city';
+            $p['city'] = $city;
+        }
+        if ($onDuty) {
+            $sql .= $this->onDutyFilter();
+        }
+        $stmt = $this->db->prepare($sql . ' ORDER BY (duty_until IS NULL) ASC, e.nom ASC');
         $stmt->execute($p);
         return $stmt->fetchAll();
     }
 
-    /** The module JOIN: pharmacies (on duty today if asked) declaring a matching medicine in stock. @return array[] */
-    public function searchStock(string $q, string $city, bool $onDuty): array
+    public function searchStock(string $q, string $city = '', bool $onDuty = false): array
     {
-        $sql = 'SELECT e.id, e.name, e.city, e.address, e.phone, m.name AS med_name, m.dosage, m.form, d.quantity, ' . $this->dutyUntil() . ' AS duty_until
+        $sql = 'SELECT e.id, e.nom, e.ville, e.adresse, e.telephone, m.id AS med_id, m.name AS med_name, m.dci, m.dosage, m.form, m.requires_prescription, d.quantity, ' . $this->dutyUntil() . " AS duty_until
                 FROM etablissements_sante e
                 JOIN disponibilites d ON d.etablissement_id = e.id AND d.quantity > 0
                 JOIN medicaments m ON m.id = d.medicament_id
-                WHERE e.type = \'pharmacie\' AND (m.name LIKE :q1 OR m.dci LIKE :q2)';
+                WHERE e.type = 'pharmacie' AND (m.name LIKE :q1 OR m.dci LIKE :q2)";
         $p = ['q1' => '%' . $q . '%', 'q2' => '%' . $q . '%'];
-        if ($city !== '') { $sql .= ' AND e.city = :city'; $p['city'] = $city; }
-        if ($onDuty) $sql .= $this->onDutyFilter();
-        $stmt = $this->db->prepare($sql . ' ORDER BY e.name, m.name');
+        if ($city !== '') {
+            $sql .= ' AND e.ville = :city';
+            $p['city'] = $city;
+        }
+        if ($onDuty) {
+            $sql .= $this->onDutyFilter();
+        }
+        $stmt = $this->db->prepare($sql . ' ORDER BY (duty_until IS NULL) ASC, e.nom ASC, m.name ASC');
         $stmt->execute($p);
         return $stmt->fetchAll();
     }
 
-    // ---------------------------------------------------------------- medicaments (CRUD)
     /** @return Medicament[] */
     public function medicaments(string $q = ''): array
     {
-        $stmt = $this->db->prepare('SELECT * FROM medicaments WHERE name LIKE :q1 OR dci LIKE :q2 ORDER BY name, dosage');
+        $stmt = $this->db->prepare('SELECT * FROM medicaments WHERE name LIKE :q1 OR COALESCE(dci,"") LIKE :q2 ORDER BY name ASC, dosage ASC');
         $stmt->execute(['q1' => '%' . $q . '%', 'q2' => '%' . $q . '%']);
-        return array_map(fn(array $r) => Medicament::fromArray($r), $stmt->fetchAll());
-    }
-
-    public function findMedicament(int $id): ?Medicament
-    {
-        $stmt = $this->db->prepare('SELECT * FROM medicaments WHERE id = :id');
-        $stmt->execute(['id' => $id]);
-        $r = $stmt->fetch();
-        return $r ? Medicament::fromArray($r) : null;
+        return array_map(static fn(array $r): Medicament => Medicament::fromArray($r), $stmt->fetchAll());
     }
 
     public function medicamentExists(string $name, ?string $dosage, string $form, int $exceptId = 0): bool
@@ -96,22 +100,16 @@ class PharmacieService
         }
     }
 
-    public function deleteMedicament(int $id): void { $this->db->prepare('DELETE FROM medicaments WHERE id = :id')->execute(['id' => $id]); }
+    public function deleteMedicament(int $id): void
+    {
+        $this->db->prepare('DELETE FROM medicaments WHERE id = :id')->execute(['id' => $id]);
+    }
 
-    // ---------------------------------------------------------------- gardes (CRUD)
     /** @return GardePharmacie[] */
     public function gardes(): array
     {
-        $rows = $this->db->query('SELECT g.*, e.name AS etablissement_name FROM gardes_pharmacie g JOIN etablissements_sante e ON e.id = g.etablissement_id ORDER BY g.start_date DESC, e.name')->fetchAll();
-        return array_map(fn(array $r) => GardePharmacie::fromArray($r), $rows);
-    }
-
-    public function findGarde(int $id): ?GardePharmacie
-    {
-        $stmt = $this->db->prepare('SELECT g.*, e.name AS etablissement_name FROM gardes_pharmacie g JOIN etablissements_sante e ON e.id = g.etablissement_id WHERE g.id = :id');
-        $stmt->execute(['id' => $id]);
-        $r = $stmt->fetch();
-        return $r ? GardePharmacie::fromArray($r) : null;
+        $rows = $this->db->query('SELECT g.*, e.nom AS etablissement_name FROM gardes_pharmacie g JOIN etablissements_sante e ON e.id = g.etablissement_id ORDER BY g.start_date DESC, e.nom ASC')->fetchAll();
+        return array_map(static fn(array $r): GardePharmacie => GardePharmacie::fromArray($r), $rows);
     }
 
     public function gardeOverlaps(int $etabId, string $start, string $end, int $exceptId = 0): bool
@@ -131,31 +129,30 @@ class PharmacieService
         }
     }
 
-    public function deleteGarde(int $id): void { $this->db->prepare('DELETE FROM gardes_pharmacie WHERE id = :id')->execute(['id' => $id]); }
+    public function deleteGarde(int $id): void
+    {
+        $this->db->prepare('DELETE FROM gardes_pharmacie WHERE id = :id')->execute(['id' => $id]);
+    }
 
-    // ---------------------------------------------------------------- disponibilites (stock)
     /** @return Disponibilite[] */
     public function disponibilites(): array
     {
-        $rows = $this->db->query('SELECT d.*, e.name AS etablissement_name, m.name AS medicament_name FROM disponibilites d
-                                  JOIN etablissements_sante e ON e.id = d.etablissement_id JOIN medicaments m ON m.id = d.medicament_id
-                                  ORDER BY e.name, m.name')->fetchAll();
-        return array_map(fn(array $r) => Disponibilite::fromArray($r), $rows);
+        $rows = $this->db->query('SELECT d.*, e.nom AS etablissement_name, m.name AS medicament_name
+                                  FROM disponibilites d
+                                  JOIN etablissements_sante e ON e.id = d.etablissement_id
+                                  JOIN medicaments m ON m.id = d.medicament_id
+                                  ORDER BY e.nom ASC, m.name ASC')->fetchAll();
+        return array_map(static fn(array $r): Disponibilite => Disponibilite::fromArray($r), $rows);
     }
 
-    /** Creates or updates the stock line of (pharmacy, medicine). */
     public function setStock(int $etabId, int $medId, int $qty): void
     {
         $this->db->prepare('INSERT INTO disponibilites (etablissement_id, medicament_id, quantity) VALUES (:e, :m, :q)
                             ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)')->execute(['e' => $etabId, 'm' => $medId, 'q' => $qty]);
     }
 
-    public function deleteStock(int $id): void { $this->db->prepare('DELETE FROM disponibilites WHERE id = :id')->execute(['id' => $id]); }
-
-    public function onDutyCount(): int
+    public function deleteStock(int $id): void
     {
-        return (int)$this->db->query('SELECT COUNT(DISTINCT g.etablissement_id) FROM gardes_pharmacie g WHERE ' . self::DUTY_TODAY)->fetchColumn();
+        $this->db->prepare('DELETE FROM disponibilites WHERE id = :id')->execute(['id' => $id]);
     }
-
-    public function countMedicaments(): int { return (int)$this->db->query('SELECT COUNT(*) FROM medicaments')->fetchColumn(); }
 }

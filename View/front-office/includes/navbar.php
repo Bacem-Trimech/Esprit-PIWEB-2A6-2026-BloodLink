@@ -1,17 +1,19 @@
 <header class="site-header">
   <a class="brand" href="index.php">
     <span class="brand-mark">♥</span>
-    <span><strong>BloodLink</strong><small>Le lien qui sauve</small></span>
+    <span><strong>BloodLink</strong><small>Portail Santé & Don de Sang</small></span>
   </a>
   <nav class="main-nav">
-    <a href="index.php?page=collectes" <?= in_array($page, ['collectes', 'collecte'], true) ? 'class="active"' : '' ?>>Collectes</a>
+    <a href="index.php?page=collectes" <?= in_array($page, ['accueil', 'collectes', 'collecte'], true) ? 'class="active"' : '' ?>>Collectes</a>
     <a href="index.php?page=sos" <?= in_array($page, ['sos', 'sos-nouveau'], true) ? 'class="active"' : '' ?>>SOS sang</a>
+    <a href="index.php?page=annuaire" <?= in_array($page, ['annuaire', 'annuaire-detail'], true) ? 'class="active"' : '' ?>>Annuaire</a>
+    <a href="index.php?page=rendez-vous" <?= $page === 'rendez-vous' ? 'class="active"' : '' ?>>Rendez-vous</a>
+    <a href="index.php?page=pharmacies" <?= $page === 'pharmacies' ? 'class="active"' : '' ?>>Pharmacies</a>
+    <a href="index.php?page=laboratoires" <?= $page === 'laboratoires' ? 'class="active"' : '' ?>>Laboratoires</a>
     <?php if ($current && $current['role'] === 'DONNEUR'): ?>
-      <a href="index.php?page=mes-participations" <?= $page === 'mes-participations' ? 'class="active"' : '' ?>>Mes dons</a>
-      <a href="index.php?page=mes-examens" <?= $page === 'mes-examens' ? 'class="active"' : '' ?>>Mes examens</a>
-      <a href="index.php?page=mon-qr" <?= $page === 'mon-qr' ? 'class="active"' : '' ?>>Mon QR</a>
+      <a href="index.php?page=mes-participations" <?= in_array($page, ['mes-participations', 'mes-examens', 'mon-qr'], true) ? 'class="active"' : '' ?>>Mes dons</a>
     <?php elseif ($current): ?>
-      <a href="index.php?page=<?= $current['role'] === 'ADMIN' ? 'tableau-bord' : 'gestion-collectes' ?>">← Retour à mon espace</a>
+      <a href="index.php?page=<?= $current['role'] === 'ADMIN' ? 'tableau-bord' : 'gestion-collectes' ?>">← Mon espace</a>
     <?php endif; ?>
   </nav>
   <div class="header-actions">

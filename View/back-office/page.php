@@ -10,6 +10,10 @@ echo match($page) {
     'parametres'=>'Configuration de mon centre',
     'inviter-responsable'=>'Inviter un responsable de collecte',
     'scan-donneur'=>'Vérification QR Donneur',
+    'admin-annuaire'=>'Annuaire Médical & Services de santé',
+    'admin-rendez-vous'=>'Praticiens & Rendez-vous médicaux',
+    'admin-pharmacies'=>'Pharmacies, Médicaments, Gardes & Stocks',
+    'admin-laboratoires'=>'Laboratoires, Analyses & Comptes rendus',
     'profil'=>'Mon compte et sécurité',
     default=>'Gestion'
 }; ?></h1></div></div>
@@ -260,4 +264,5 @@ echo match($page) {
 <?php elseif ($page==='collecte-gestion' && $detail): require __DIR__.'/collecte-gestion.php'; ?>
 <?php elseif ($page==='profil'): require __DIR__.'/../front-office/extra.php'; ?>
 <?php elseif (in_array($page,['tableau-bord','gestion-sos','parametres','inviter-responsable','scan-donneur'],true)): require __DIR__.'/extra.php'; ?>
+<?php elseif (in_array($page,['admin-annuaire','admin-rendez-vous','admin-pharmacies','admin-laboratoires'],true)): require __DIR__.'/modules.php'; ?>
 <?php endif; ?>

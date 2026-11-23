@@ -304,6 +304,14 @@ final class TableauBordController
             'par_groupe' => array_values($groupesBase),
             'par_collecte' => $collectesRows,
             'donneurs_suivi' => array_values($donneursSuivi),
+            'nb_etablissements' => (int)$db->query('SELECT COUNT(*) FROM etablissements_sante')->fetchColumn(),
+            'nb_services' => (int)$db->query('SELECT COUNT(*) FROM services_medicaux')->fetchColumn(),
+            'nb_praticiens' => (int)$db->query('SELECT COUNT(*) FROM praticiens')->fetchColumn(),
+            'nb_rdv' => (int)$db->query("SELECT COUNT(*) FROM rendez_vous WHERE statut <> 'Annulé'")->fetchColumn(),
+            'nb_pharmacies_garde' => (int)$db->query('SELECT COUNT(DISTINCT etablissement_id) FROM gardes_pharmacie WHERE CURDATE() BETWEEN start_date AND end_date')->fetchColumn(),
+            'nb_medicaments' => (int)$db->query('SELECT COUNT(*) FROM medicaments')->fetchColumn(),
+            'nb_analyses' => (int)$db->query('SELECT COUNT(*) FROM analyse_medicale')->fetchColumn(),
+            'nb_comptes_rendus' => (int)$db->query('SELECT COUNT(*) FROM compte_rendu_analyse')->fetchColumn(),
         ];
     }
 

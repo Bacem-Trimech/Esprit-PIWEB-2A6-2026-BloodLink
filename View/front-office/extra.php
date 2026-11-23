@@ -183,8 +183,13 @@ $isStaffProfile = ($current && in_array($current['role'] ?? '', ['ADMIN','RESPON
     <input type="hidden" name="csrf" value="<?= e(jetonCsrf()) ?>">
     <div class="form-grid">
       <div class="field">
-        <label for="lieu">Établissement / Hôpital / Service précis</label>
-        <input id="lieu" name="lieu" placeholder="Ex. Hôpital Charles-Nicolle — Urgences" value="<?= e($_POST['lieu']??'') ?>">
+        <label for="lieu">Établissement / Hôpital / Service précis (liaison Annuaire)</label>
+        <input id="lieu" name="lieu" list="annuaire-etabs-list" placeholder="Ex. Hôpital Charles-Nicolle — Urgences" value="<?= e($_POST['lieu']??'') ?>">
+        <datalist id="annuaire-etabs-list">
+          <?php foreach ($moduleData['etablissements'] ?? [] as $etOpt): ?>
+            <option value="<?= e($etOpt['nom'] . ' — ' . $etOpt['ville']) ?>">
+          <?php endforeach; ?>
+        </datalist>
       </div>
       <div class="field">
         <label for="ville">Ville</label>

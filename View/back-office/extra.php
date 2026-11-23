@@ -37,6 +37,29 @@
     </article>
   </div>
 
+  <div class="kpi-banner">
+    <a class="kpi-card kpi-drives" href="index.php?page=admin-annuaire">
+      <div class="kpi-head"><span>ANNUAIRE MÉDICAL</span><span class="kpi-badge kpi-badge-blue"><?= (int)($stats['nb_services'] ?? 0) ?> services</span></div>
+      <strong class="kpi-number"><?= (int)($stats['nb_etablissements'] ?? 0) ?> <small>établissements</small></strong>
+      <p class="kpi-meta">Hôpitaux, cliniques, pharmacies & laboratoires reliés →</p>
+    </a>
+    <a class="kpi-card kpi-donors" href="index.php?page=admin-rendez-vous">
+      <div class="kpi-head"><span>RENDEZ-VOUS</span><span class="kpi-badge kpi-badge-green"><?= (int)($stats['nb_praticiens'] ?? 0) ?> praticiens</span></div>
+      <strong class="kpi-number"><?= (int)($stats['nb_rdv'] ?? 0) ?> <small>RDV actifs</small></strong>
+      <p class="kpi-meta">Consultations liées aux praticiens et utilisateurs →</p>
+    </a>
+    <a class="kpi-card kpi-blood" href="index.php?page=admin-pharmacies">
+      <div class="kpi-head"><span>PHARMACIES & STOCKS</span><span class="kpi-badge"><?= (int)($stats['nb_pharmacies_garde'] ?? 0) ?> de garde</span></div>
+      <strong class="kpi-number"><?= (int)($stats['nb_medicaments'] ?? 0) ?> <small>médicaments</small></strong>
+      <p class="kpi-meta">Gardes du jour et disponibilités en officine →</p>
+    </a>
+    <a class="kpi-card kpi-sos" href="index.php?page=admin-laboratoires">
+      <div class="kpi-head"><span>LABORATOIRES</span><span class="kpi-badge"><?= (int)($stats['nb_comptes_rendus'] ?? 0) ?> bilans</span></div>
+      <strong class="kpi-number"><?= (int)($stats['nb_analyses'] ?? 0) ?> <small>analyses</small></strong>
+      <p class="kpi-meta">Catalogue biologique et comptes rendus patients →</p>
+    </a>
+  </div>
+
   <div class="analytics-grid">
     <section class="panel chart-panel">
       <div class="panel-heading">

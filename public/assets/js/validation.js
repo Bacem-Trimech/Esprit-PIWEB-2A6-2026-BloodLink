@@ -111,6 +111,53 @@ window.bloodlinkInitValidation=()=>{
           if(!value('prochain_don_le')) add('prochain_don_le','Indiquez la prochaine date possible.');
         }
       }
+      if(kind==='etablissement'){
+        if(value('nom').length<3||value('nom').length>160) add('nom','Nom d’établissement invalide (3 à 160 caractères).');
+        if(value('ville').length<2||value('ville').length>100) add('ville','Ville invalide (2 à 100 caractères).');
+        if(value('adresse').length<5||value('adresse').length>255) add('adresse','Adresse invalide (5 à 255 caractères).');
+        if(value('email')&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value('email'))) add('email','Adresse e-mail invalide.');
+      }
+      if(kind==='service-medical'){
+        if(!value('etablissement_id')) add('etablissement_id','Sélectionnez un établissement.');
+        if(value('nom').length<3) add('nom','Nom du service invalide (3 caractères min.).');
+        if(value('specialite').length<2) add('specialite','Précisez la spécialité.');
+      }
+      if(kind==='praticien'){
+        if(value('nom').length<2) add('nom','Nom du praticien invalide.');
+        if(value('prenom').length<2) add('prenom','Prénom du praticien invalide.');
+        if(value('specialite').length<2) add('specialite','Spécialité requise.');
+        if(value('email')&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value('email'))) add('email','Adresse e-mail invalide.');
+      }
+      if(kind==='rendez-vous'){
+        if(!value('id_praticien')) add('id_praticien','Sélectionnez un praticien.');
+        if(!value('date_rendezvous')) add('date_rendezvous','Choisissez une date de rendez-vous.');
+        if(!value('heure_rendezvous')) add('heure_rendezvous','Choisissez un horaire.');
+        if(value('motif').length<4) add('motif','Précisez le motif (4 caractères minimum).');
+      }
+      if(kind==='medicament'){
+        if(value('name').length<2) add('name','Nom du médicament requis (2 caractères min.).');
+        if(value('form').length<2) add('form','Indiquez la forme (Comprimé, Sirop…).');
+      }
+      if(kind==='garde'){
+        if(!value('etablissement_id')) add('etablissement_id','Sélectionnez une pharmacie.');
+        if(!value('start_date')||!value('end_date')||value('end_date')<value('start_date')) add('end_date','Vérifiez les dates de garde.');
+      }
+      if(kind==='stock'){
+        const qty=Number(value('quantity'));
+        if(value('quantity')===''||Number.isNaN(qty)||qty<0||qty>10000) add('quantity','Quantité invalide (0 à 10 000).');
+      }
+      if(kind==='analyse'){
+        if(value('nom').length<3) add('nom','Nom de l’analyse requis (3 caractères min.).');
+        if(value('description').length<4) add('description','Description requise (4 caractères min.).');
+        if(Number.isNaN(Number(value('prix')))||Number(value('prix'))<=0) add('prix','Prix positif requis.');
+        if(Number(value('delai_heures'))<1) add('delai_heures','Délai minimum 1 heure.');
+      }
+      if(kind==='compte-rendu'){
+        if(!value('id_analyse')) add('id_analyse','Sélectionnez une analyse.');
+        if(!value('utilisateur_id')&&value('nom_patient').length<3) add('nom_patient','Indiquez le patient (3 caractères min.) ou choisissez un compte.');
+        if(!value('date_prelevement')) add('date_prelevement','Date de prélèvement requise.');
+        if(value('resultat').length<3) add('resultat','Saisissez le résultat de l’analyse.');
+      }
       if(errors.length){
         event.preventDefault();
         for(const [input,message] of errors){

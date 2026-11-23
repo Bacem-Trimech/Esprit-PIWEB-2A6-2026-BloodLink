@@ -1,5 +1,0 @@
-<!doctype html>
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?= htmlspecialchars($etablissement['nom']) ?> - BloodLink</title><link rel="stylesheet" href="public/assets/css/style.css"></head>
-<body><header class="topbar"><a class="brand" href="index.php">BloodLink <small>Services de santé</small></a><a class="btn secondary" href="index.php">Retour aux établissements</a></header>
-<main class="container narrow"><p class="eyebrow">FICHE ÉTABLISSEMENT</p><h1><?= htmlspecialchars($etablissement['nom']) ?></h1><span class="tag"><?= htmlspecialchars($etablissement['type']) ?> · <?= htmlspecialchars($etablissement['ville']) ?></span>
-<section class="form-card detail-card"><p><?= htmlspecialchars($etablissement['description']) ?></p><p><b>Adresse :</b> <?= htmlspecialchars($etablissement['adresse']) ?></p><p><b>Téléphone :</b> <?= htmlspecialchars($etablissement['telephone']) ?></p><p><b>Email :</b> <?= htmlspecialchars($etablissement['email']) ?></p></section></main></body></html>

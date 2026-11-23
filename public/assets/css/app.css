@@ -90,12 +90,12 @@ body{color:#17243a;background:#f2eaed}
 
 /* Tableau de bord analytique Administrateur */
 .admin-analytics{display:grid;gap:20px}
-.kpi-banner{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
-.kpi-card{background:#fff;border:1.5px solid #d5dce6;border-radius:16px;padding:18px 20px;box-shadow:0 6px 20px rgba(23,36,58,.06);border-top:4px solid #d92735}
+.kpi-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.kpi-card{background:#fff;border:1.5px solid #d5dce6;border-radius:16px;padding:18px 20px;box-shadow:0 6px 20px rgba(23,36,58,.06);border-top:4px solid #d92735;min-width:0}
 .kpi-card.kpi-donors{border-top-color:#15966a}
 .kpi-card.kpi-drives{border-top-color:#3268dc}
 .kpi-card.kpi-sos{border-top-color:#d97706}
-.kpi-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.kpi-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .kpi-head span:first-child{font-size:.72rem;font-weight:850;letter-spacing:.06em;color:#556275}
 .kpi-badge{padding:3px 9px;border-radius:999px;background:#fff0f1;color:#c81e2d;font-size:.74rem;font-weight:800}
 .kpi-badge-green{background:#e9f8f1;color:#117a56}
@@ -356,6 +356,8 @@ body{color:#17243a;background:#f2eaed}
 }
 .table-wrap{border:1.5px solid #d8cad0!important;box-shadow:0 4px 14px rgba(32,20,28,.04)}
 .site-header{background:rgba(255,255,255,.94)!important;border-bottom:1.5px solid #dfd0d5!important}
+.main-nav{gap:18px!important}
+.module-card{margin-top:0!important;display:flex;flex-direction:column;justify-content:space-between}
 .admin-topbar{background:#fff;min-height:58px;border-bottom:1.5px solid #d6dde8!important}
 .topbar-left{display:flex;align-items:center;gap:12px}
 .sidebar-toggle-btn{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:10px;border:1.5px solid #cbd5e1;background:#fff;color:#334155;cursor:pointer;transition:background-color .16s ease,color .16s ease,border-color .16s ease,transform .16s ease}
