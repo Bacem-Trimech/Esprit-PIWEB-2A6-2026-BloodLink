@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" width="800" height="420">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#172554"/>
+      <stop offset="50%" stop-color="#9f1239"/>
+      <stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="420" fill="url(#bg2)"/>
+  <circle cx="140" cy="95" r="180" fill="#ffffff" fill-opacity="0.06"/>
+  <circle cx="670" cy="320" r="200" fill="#ffffff" fill-opacity="0.07"/>
+  <!-- Mobile Clinic / Unit Graphic -->
+  <rect x="130" y="135" width="340" height="165" rx="26" fill="#ffffff" fill-opacity="0.16" stroke="#ffffff" stroke-opacity="0.3" stroke-width="2"/>
+  <path d="M470 175 L555 175 C575 175 592 190 598 210 L615 265 C618 282 605 300 585 300 L470 300 Z" fill="#ffffff" fill-opacity="0.16" stroke="#ffffff" stroke-opacity="0.3" stroke-width="2"/>
+  <circle cx="220" cy="305" r="34" fill="#1e293b" stroke="#ffffff" stroke-width="8"/>
+  <circle cx="525" cy="305" r="34" fill="#1e293b" stroke="#ffffff" stroke-width="8"/>
+  <!-- Heart & Cross inside unit -->
+  <path d="M295 190 C282 174 256 176 246 195 C236 214 252 238 295 264 C338 238 354 214 344 195 C334 176 308 174 295 190 Z" fill="#ffffff" fill-opacity="0.95"/>
+  <rect x="492" y="196" width="72" height="44" rx="10" fill="#ffffff" fill-opacity="0.25"/>
+</svg>
