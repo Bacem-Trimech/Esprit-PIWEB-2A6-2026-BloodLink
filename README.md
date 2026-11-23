@@ -118,6 +118,7 @@ classDiagram
     Utilisateur "1" -- "0..1" ParametreResponsable : configure
     Utilisateur "1" -- "0..*" CollecteSang : organise
     Utilisateur "1" -- "0..*" ParticipationCollecte : participe
+    Utilisateur "0..1" ..> "0..*" AlerteSos : modere
     CollecteSang "1" *-- "1..*" CreneauCollecte : contient
     CollecteSang "1" -- "0..*" ParticipationCollecte : accueille
     CreneauCollecte "0..1" -- "0..*" ParticipationCollecte : reserve
