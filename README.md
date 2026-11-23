@@ -1,19 +1,25 @@
-# BloodLink
+# Projet Laboratoire (MVC PHP)
 
-Projet d'intégration Web de la classe 2A6.
+Base de données : **2 tables seulement**
+- `analyse_medicale` : le catalogue des analyses (nom, type d'échantillon, prix, délai, à jeun)
+- `compte_rendu_analyse` : le résultat d'une analyse pour un patient (`id_analyse` = clé étrangère vers `analyse_medicale`)
 
-## Architecture
+## Installation
+1. Copier le dossier `laboratoire` dans `htdocs` (XAMPP).
+2. Importer `gslaboratoire.sql` dans phpMyAdmin.
+3. Vérifier `config.php` (user `root`, mot de passe vide, base `gslaboratoire`).
+4. Dashboard (point d'entrée) : http://localhost/laboratoire/view/backoffice/dashboard.php
+5. Front office : http://localhost/laboratoire/view/frontoffice/consulterCompteRendu.php
 
-- `config` : connexion à la base de données avec PDO.
-- `Controller` : contrôleurs de l'application.
-- `Model` : classes et entités.
-- `Service` : services de l'application.
-- `View/front-office` : pages destinées aux utilisateurs.
-- `View/back-office` : pages destinées à l'administration.
-- `public/assets/css` : fichiers CSS.
-- `public/assets/js` : fichiers JavaScript.
+## Structure
+- `model/` : classes AnalyseMedicale et CompteRenduAnalyse
+- `controller/` : AnalyseMedicaleC et CompteRenduAnalyseC (CRUD + contrôle de saisie + affichage)
+- `view/backoffice/` : dashboard, listes, ajout, modification, suppression + contrôle JS
+- `view/frontoffice/` : recherche par patient et affichage d'un compte rendu
+- `view/partials/` : sidebar/en-tête/pied de page communs (style BloodLink)
+- `view/assets/style.css` : thème rouge/rose BloodLink
 
-## Branches Git
-
-Chaque membre travaille dans sa propre branche : `b1`, `b2`, `b3`, `b4` ou `b5`.
-Les travaux terminés seront ensuite fusionnés dans `main`.
+## Fonctionnalité métier
+`CompteRenduAnalyseC::afficherCompteRendu($id)` joint `compte_rendu_analyse` et
+`analyse_medicale` pour afficher le compte rendu avec le nom de l'analyse correspondante
+(`view/frontoffice/voirCompteRendu.php`). La liste des comptes rendus affiche aussi ce nom.
