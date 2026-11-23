@@ -81,7 +81,7 @@ Projet développé à **Esprit School of Engineering** dans le cadre du module *
 - **Khalil Talbi** — `AnnuaireMedicale`
 - **Hedia Ben Nacer** — `RendezVous`
 - **Aala Werchfani** — `Pharmacies`
-- **Iyed Khlil** — `Laboratoires`
+- **Iyed Khlif** — `Laboratoires`
 
 ## Acknowledgments
 
