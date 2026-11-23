@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" width="800" height="420">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7f1d1d"/>
+      <stop offset="52%" stop-color="#be123c"/>
+      <stop offset="100%" stop-color="#fb7185"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="420" fill="url(#bg3)"/>
+  <circle cx="400" cy="210" r="220" fill="#ffffff" fill-opacity="0.06"/>
+  <circle cx="400" cy="210" r="145" fill="#ffffff" fill-opacity="0.1"/>
+  <!-- Campus / Solidarity Hands & Heart Drop -->
+  <path d="M400 95 C400 95 482 188 482 242 C482 287 445 324 400 324 C355 324 318 287 318 242 C318 188 400 95 400 95 Z" fill="#ffffff" fill-opacity="0.95"/>
+  <path d="M400 212 C391 200 373 202 366 215 C359 228 370 245 400 263 C430 245 441 228 434 215 C427 202 409 200 400 212 Z" fill="#be123c"/>
+</svg>

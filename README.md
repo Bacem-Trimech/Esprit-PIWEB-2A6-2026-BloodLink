@@ -1,43 +1,254 @@
-# BloodLink — Projet Web 2A6
+# Esprit-PIWEB-2A6-2026-BloodLink
 
-Application PHP/MySQL de collecte de sang. Interface en français, architecture MVC, thème rouge et blanc repris de BloodLink-Atelier.
+> **BloodLink** — Plateforme web MVC de gestion des collectes de sang, suivi médical pré-don, qualification biologique en laboratoire, traçabilité des poches et alertes SOS urgentes.  
+> Academic project developed at **Esprit School of Engineering** (`Esprit-PIWEB-2A6-2026-BloodLink`, année universitaire 2026–2027).
 
-## Espaces et parcours
+![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL%20%2F%20MariaDB-PDO-4479A1?logo=mysql&logoColor=white)
+![Architecture](https://img.shields.io/badge/Architecture-MVC%20%2B%20Singleton-D92735)
+![School](https://img.shields.io/badge/Esprit%20School%20of%20Engineering-2A6%20PIWEB-B91C1C)
 
-- **Visiteur** : consulter les collectes et les alertes SOS ; publier une alerte sans compte. Elle exige un lieu, une ville, un groupe receveur, un téléphone et le consentement de publication. Elle disparaît automatiquement après 2 heures ; l’administrateur peut la retirer avant. Le tableau des groupes proposés concerne uniquement les globules rouges et ne remplace jamais les contrôles de compatibilité du centre.
-- **Donneur** : inscription, connexion, profil (coordonnées, date de naissance, groupe déclaré, couleur de l’avatar, préférence de contact), modification du mot de passe, QR personnel renouvelable, réservation selon les places disponibles, annulation, historique des dons confirmés avec volume et poche, examen et résultats validés.
-- **Responsable** : compte créé par invitation d’un administrateur. Il complète ses informations et choisit son mot de passe. Il gère ses collectes et créneaux, enregistre les arrivées et les donneurs sans réservation, crée un compte provisoire pour un visiteur sans compte après consentement et remet un lien ou QR d’activation. Il saisit les mesures avant don, la décision du professionnel, le volume prélevé, le compte rendu du laboratoire et l’avis du centre pour un prochain don. Sa page de paramètres règle son organisation, son contact, la capacité proposée, l’horizon de réservation et le message de ses collectes.
-- **Administrateur** : tableau de bord (donneurs, responsables, collectes, réservations, visites sur place, dons, volume, SOS, pages vues), utilisateurs et rôles, invitations responsables, toutes les collectes, modération SOS et identification QR.
+---
 
-Les invitations sont aléatoires, stockées sous forme d’empreinte, à usage unique et valables 30 jours. Une nouvelle invitation remplace l’ancienne. Le QR donneur contient seulement un identifiant opaque ; la consultation exige une connexion responsable ou administrateur. La caméra QR utilise `BarcodeDetector` si le navigateur le permet ; la saisie du code reste possible.
+## Table des Matières
 
-Un compte créé directement reçoit une alerte l’invitant à compléter son profil. La réservation exige un profil donneur complété. La suppression depuis l’administration désactive un compte pour conserver la traçabilité de ses dons.
+1. [Overview](#overview)
+2. [Description](#description)
+3. [Features](#features)
+4. [Fonctionnalités](#fonctionnalités)
+5. [Tech Stack](#tech-stack)
+   - [Frontend](#frontend)
+   - [Backend](#backend)
+6. [Architecture](#architecture)
+7. [Getting Started](#getting-started)
+8. [Installation](#installation)
+9. [Utilisation](#utilisation)
+10. [Academic Context](#academic-context)
+11. [Contributors](#contributors)
+12. [Contributions](#contributions)
+13. [Acknowledgments](#acknowledgments)
+14. [Licence](#licence)
 
-Le responsable peut enregistrer une arrivée avec le numéro du compte, le code de réservation de 12 caractères ou le code QR personnel. Un code de réservation rattache l’arrivée à la réservation existante. Un participant sans don confirmé peut être retiré de la collecte ; son historique reste conservé. Les formulaires affichent les erreurs sur la page courante et les actions de sauvegarde utilisent JavaScript pour actualiser l’écran sans rechargement complet. Chaque champ de mot de passe dispose d’un bouton « Voir ».
+---
 
-## Installation XAMPP
+## Overview
 
-1. Cloner ce dépôt dans `C:\xampp\htdocs\Esprit-PIWEB-2A6-2026-BloodLink` et démarrer Apache et MySQL.
-2. Pour une **installation neuve**, importer `database.sql` dans phpMyAdmin. Ce fichier crée la base `bloodlink_piweb_2a6` et toutes les tables.
-3. Pour une **installation déjà créée avec l’ancien schéma**, exécuter une seule fois les migrations `002_fonctionnalites.sql`, `003_depistages.sql` et `004_responsable_suivi.sql`, dans cet ordre. Si les deux premières ont déjà été appliquées, exécuter seulement `004_responsable_suivi.sql`. Ne pas réimporter `database.sql` sur une base existante.
-4. Par défaut, PDO utilise `127.0.0.1`, la base `bloodlink_piweb_2a6`, `root` et un mot de passe vide. Au besoin, définir `BLOODLINK_DB_HOST`, `BLOODLINK_DB_NAME`, `BLOODLINK_DB_USER`, `BLOODLINK_DB_PASS` dans l’environnement du serveur.
-5. Créer le premier administrateur, si aucun n’existe : définir temporairement `BLOODLINK_ADMIN_PASSWORD` (12 caractères minimum), puis lancer `C:\xampp\php\php.exe scripts/creer_admin.php "Nom Administrateur" admin@example.org`. Retirer ensuite cette variable. Sur la base locale préparée pour ce projet, le compte Bacem Trimech est déjà administrateur.
-6. Ouvrir `http://localhost/Esprit-PIWEB-2A6-2026-BloodLink/`.
+**BloodLink** is a full-stack PHP/MySQL web application developed using the **Model–View–Controller (MVC)** architecture at **Esprit School of Engineering** as part of the *Projet Intégré Technologies Web (PIWEB)* module for class **2A6** (Academic Year **2026–2027**). It connects blood donors (**Donneurs**), blood drive managers (**Responsables de collecte**), and platform administrators (**Administrateurs**) around a unified, medically traceable workflow: blood drive scheduling, 24-hour slot reservation, QR donor identification, pre-donation medical examination, blood bag collection (`420–480 ml`), biological laboratory validation (`VIH`, `VHB`, `VHC`, `Syphilis`), 12-week inter-donation recovery enforcement, and 2-hour emergency **SOS Sang** alerts.
 
-L’inscription publique crée seulement un **DONNEUR**. Inviter un responsable depuis « Inviter un responsable » dans l’administration et lui transmettre le lien personnel. Le projet ne fournit pas encore d’e-mail transactionnel : le lien doit être remis par un canal de confiance. Pour scanner avec un téléphone, servir l’application sur une adresse accessible au téléphone et en HTTPS ; `localhost` sur le téléphone désigne le téléphone lui-même.
+---
 
-## Sécurité et portée médicale
+## Description
 
-Validation des formulaires en PHP et JavaScript (sans attribut HTML `required`), requêtes PDO préparées, échappement des vues, jetons CSRF, mots de passe hachés, renouvellement de session, cookies HttpOnly/SameSite, contrôle des rôles et des collectes à chaque requête, limitation de fréquence SOS. Les résultats du laboratoire ne sont montrés au donneur qu’après validation ; un résultat à confirmer affiche une demande de contact avec le centre, sans détail sensible. La saisie des examens et dépistages doit être effectuée d’après un professionnel et un compte rendu réel. Cette application scolaire ne décide pas de l’aptitude médicale ni de la compatibilité transfusionnelle.
+Dans de nombreux centres de transfusion et campagnes mobiles, la coordination entre la prise de rendez-vous des donneurs, l’accueil sur place, l’examen médical pré-don, la qualification biologique des poches en laboratoire et la diffusion d’appels urgents au don (**SOS Sang**) souffre d’un manque de traçabilité unifiée.
 
-Le volume enregistré pour un don de sang total est limité à 420–480 ml et est saisi comme volume réellement prélevé. Le responsable règle les paramètres de ses propres collectes. L’avis pour un prochain don est saisi manuellement : en cours, autorisé à partir d’une date, ou non autorisé. Même après un avis favorable, une nouvelle évaluation au centre reste nécessaire.
+**BloodLink** répond à cette problématique en proposant :
+- Un **Front-Office public et donneur** permettant de filtrer les collectes par ville, plage de dates (`Du / Au`) et plage horaire (`De / À` au format 24h), de visualiser la galerie photos du centre, de réserver un créneau, de suivre son délai légal de récupération de **12 semaines (84 jours)** avec compte à rebours, de consulter ses examens et analyses validés, et de publier ou consulter des alertes **SOS Sang** valables 2 heures avec calcul automatique des groupes compatibles en globules rouges.
+- Un **Back-Office Responsable de collecte** dédié au pilotage opérationnel d’un centre : création de collectes avec double aperçu photo en direct (couverture + galerie jusqu’à 4 photos), horloge 24h (`00 h : 00` à `23 h : 55`), gestion des créneaux, enregistrement des arrivées (réservation en ligne, venue sur place ou scan QR), saisie de l’examen médical pré-don, confirmation de la poche prélevée (`BL-XXXXXXXXXXXX`), validation sérologique en laboratoire et comptabilisation automatique du sang sain confirmé par groupe sanguin (`A+`, `O+`, etc.) ou en attente de laboratoire.
+- Un **Back-Office Administrateur** dédié à la supervision globale : tableau de bord analytique du sang sain qualifié par groupe sanguin, fenêtre modale de détail par collecte (statistiques, traçabilité des poches et état d’éligibilité des donneurs), gestion complète des utilisateurs et des rôles (**CRUD MVC** + modification rapide du rôle en ligne + recherche instantanée), invitation sécurisée des responsables par jeton SHA-256 à usage unique, et modération des alertes SOS.
 
-Pour le sang total, les réservations et arrivées sur place sont refusées avant 12 semaines après le dernier don confirmé enregistré dans BloodLink. La date de la collecte, et non celle de l’inscription, est comparée à ce délai prudent. Le site explique la prochaine date possible. Cette vérification ne connaît que les dons enregistrés dans BloodLink ; elle ne remplace pas l’entretien au centre. Voir les recommandations de [l’OMS sur la sélection des donneurs](https://iris.who.int/bitstream/handle/10665/76724/9789241548519_eng.pdf?sequence=1) et [Idaraty Tunisie sur le don de sang total](https://www.idaraty.tn/fr/public/fr/public/index.php/fr/procedures/don-du-sang-total).
+---
 
-Le QR est généré localement avec `qrcode-generator` de Kazuhiko Arase, licence MIT (`public/assets/js/vendor/qrcode.js`).
+## Features
 
-## Structure et collaboration
+- **Complete User & Role Management (MVC CRUD)**:
+  - Three distinct roles: `ADMIN`, `RESPONSABLE`, and `DONNEUR`.
+  - Full user CRUD in the Admin portal, inline role switching, account activation/deactivation preserving medical donation history, and SHA-256 single-use invitation tokens valid for 30 days for onboarding `RESPONSABLE` accounts.
+- **Session & Security Hardening (*Workshop Sécurité PHP*)**:
+  - Singleton PDO connection (`Database::getConnexion()` / `Config::getConnexion()`) with `ATTR_EMULATE_PREPARES => false` and `ATTR_ERRMODE => ERRMODE_EXCEPTION`.
+  - Secure session flags (`session.use_strict_mode`, `HttpOnly`, `SameSite=Lax`, `session_regenerate_id(true)` on authentication and logout) and automatic **30-minute inactivity timeout** (`1800` seconds via `$_SESSION['last_activity']`).
+  - Password hashing with `password_hash(..., PASSWORD_DEFAULT)` and verification via `password_verify()`.
+  - Anti-CSRF tokens (`random_bytes(32)` + `hash_equals()`) on all state-changing `POST` forms, strict output escaping via `htmlspecialchars()`, and security headers (`Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`).
+- **Dual Input Validation (PHP + JavaScript without HTML `required`)**:
+  - Every form is validated client-side in `public/assets/js/validation.js` and server-side in `Controller/*.php` without relying on HTML5 `required` attributes.
+- **Laboratory-Qualified Blood Analytics & 12-Week Rule**:
+  - Blood volume (`ml`) and blood bags are automatically categorized by confirmed blood type (`O-`, `O+`, `A-`, `A+`, `B-`, `B+`, `AB-`, `AB+`) only after laboratory validation (`statut = 'VALIDE'`) with all four screening markers (`VIH`, `VHB`, `VHC`, `Syphilis`) confirmed `NON_REACTIF`. Pending or unconfirmed bags are tracked separately under *Groupe inconnu / Labo en attente*.
+  - Enforces the 12-week (84-day) recovery interval between whole blood donations on both online reservations and walk-in registrations.
 
-`Controller/` : logique métier ; `Service/` : sécurité ; `View/front-office/` et `View/back-office/` : pages ; `public/assets/` : thème et scripts ; `config/` : PDO ; `database.sql` et `migrations/` : schéma ; `index.php` : routage.
+---
 
-Chaque membre travaille sur sa branche et ses tâches sont suivies dans le GitHub Project Board. Les commits et fusions doivent permettre de retracer les contributions. Avant la validation, réunir et tester toutes les branches sur la machine de démonstration.
+## Fonctionnalités
+
+### 1. Module Gestion des Utilisateurs & Sécurité
+- **Authentification & Sessions** : Connexion, déconnexion avec destruction complète du cookie de session, régénération d’ID de session, expiration automatique après 30 minutes d’inactivité.
+- **CRUD Utilisateurs & Rôles** : Création de donneurs, invitation de responsables par lien/jeton à usage unique, consultation avec barre de recherche en temps réel, modification rapide du rôle (`DONNEUR`, `RESPONSABLE`, `ADMIN`) directement dans la liste, activation/désactivation.
+- **Profils adaptés par rôle** : Profil complet avec préférences et QR personnel pour le donneur ; profil simplifié 2 colonnes (coordonnées + sécurité mot de passe avec icône œil SVG) pour l’administrateur et le responsable.
+
+### 2. Module Collectes, Créneaux & Réservations (Format 24h)
+- **Gestion des collectes (Responsable)** : Création et édition avec téléversement d’une photo de couverture (aperçu carte en direct à gauche) et d’une galerie jusqu’à 4 photos (aperçu miniature en direct à gauche), sélecteur d’heure 24h (`00 h : 00` à `23 h : 55`), configuration simplifiée du centre (nom de l’établissement + capacité par défaut des créneaux).
+- **Exploration & Filtres (Front-Office)** : Recherche par ville/mot-clé, filtre par plage de dates (`Du / Au`) et filtre par plage horaire en format 24h (`De / À`, ex. `10:00` à `12:00`), galerie interactive à gauche sur la page détail d’une collecte, réservation transactionnelle avec verrouillage `SELECT ... FOR UPDATE`.
+
+### 3. Module Parcours Médical, Laboratoire & Statistiques
+- **Accueil & QR Donneur** : Vérification par caméra (`BarcodeDetector`) ou saisie du code QR opaque / code de réservation à 12 caractères, enregistrement des arrivées et des donneurs sur place.
+- **Examen Pré-Don & Prélèvement** : Saisie des constantes (tension systolique/diastolique, pouls, température, hémoglobine, poids), décision d’aptitude (`APTE`, `AJOURNE`), confirmation du don (`420–480 ml`) avec génération automatique du numéro de poche.
+- **Qualification Biologique & Bilans** : Saisie des résultats laboratoire (`VIH`, `VHB`, `VHC`, `Syphilis`, groupe sanguin confirmé, avis pour le prochain don) et mise à jour instantanée des bilans volumétriques de l’administrateur et du responsable.
+
+### 4. Module Alertes SOS Sang (2 heures)
+- Publication publique d’appels urgents sans compte requis (hôpital/lieu, ville, groupe du receveur, téléphone, consentement), affichage automatique des groupes de globules rouges compatibles, compte à rebours en direct de 2 heures et modération par l’administrateur.
+
+---
+
+## Tech Stack
+
+### Frontend
+- **HTML5 & CSS3** : Design sur mesure responsive (`public/assets/css/bloodlink.css`, `public/assets/css/app.css`) aux couleurs médicales BloodLink.
+- **JavaScript (ES6 Vanilla)** :
+  - `public/assets/js/validation.js` : Contrôle de saisie client sur tous les formulaires (sans attribut HTML `required`).
+  - `public/assets/js/forms.js` : Soumission fluide `fetch`, notifications toast de sauvegarde, sélecteur d’horloge 24 heures (`00–23h`), bascule de visibilité des mots de passe par icône œil SVG, aperçus d’images en direct (`FileReader`), filtres dynamiques de collectes et de tableaux.
+  - `public/assets/js/experience.js` : Compte à rebours SOS 2h, minuteur d’éligibilité de 12 semaines, rendu QR et lecteur caméra.
+  - `public/assets/js/vendor/qrcode.js` : Génération locale de QR Code (`qrcode-generator`, licence MIT).
+
+### Backend
+- **PHP 8.2+** : Architecture **MVC** stricte, typage strict (`declare(strict_types=1)`), sessions sécurisées, PDO préparé.
+- **MySQL / MariaDB** : Base relationnelle `bloodlink_piweb_2a6` avec contraintes d’intégrité référentielle (`FOREIGN KEY`), transactions ACID et indexation.
+- **Apache (XAMPP)** : Serveur HTTP local.
+
+---
+
+## Architecture
+
+Le projet respecte rigoureusement le patron **Modèle–Vue–Contrôleur (MVC)** ainsi que la séparation modulaire des gabarits (`includes/` pour le Front-Office et `partials/` pour le Back-Office) :
+
+```text
+Esprit-PIWEB-2A6-2026-BloodLink/
+├── config/
+│   └── config.php                     # Singleton Database::getConnexion() / Config::getConnexion() (PDO)
+├── Model/                             # 9 classes d'entités métier (propriétés privées, getters/setters)
+│   ├── Utilisateur.php
+│   ├── CollecteSang.php
+│   ├── CreneauCollecte.php
+│   ├── ParticipationCollecte.php
+│   ├── DonSang.php
+│   ├── ExamenPreDon.php
+│   ├── ResultatLaboratoire.php
+│   ├── AlerteSos.php
+│   └── ParametreResponsable.php
+├── Controller/                        # Contrôleurs métier (logique, validation PHP & requêtes PDO)
+│   ├── AuthController.php
+│   ├── CompteController.php
+│   ├── UtilisateurController.php
+│   ├── CollecteController.php
+│   ├── SuiviMedicalController.php
+│   ├── SosController.php
+│   ├── ParametreController.php
+│   └── TableauBordController.php
+├── Service/
+│   └── Securite.php                   # Sessions (timeout 30 min), CSRF, RBAC, headers HTTP, échappement XSS
+├── View/
+│   ├── front-office/                  # Gabarit et vues publiques / espace donneur
+│   │   ├── includes/                  # Composants modulaires Front-Office (head, navbar, footer, scripts)
+│   │   ├── layout.php
+│   │   ├── page.php
+│   │   └── extra.php
+│   └── back-office/                   # Gabarit et vues d'administration / espace responsable
+│       ├── partials/                  # Composants modulaires Back-Office (head, sidebar, header, footer, scripts)
+│       ├── layout.php
+│       ├── page.php
+│       ├── extra.php
+│       └── collecte-gestion.php
+├── public/
+│   ├── assets/                        # Feuilles de style CSS, scripts JS et illustrations SVG
+│   └── uploads/collectes/             # Photos téléversées pour les collectes
+├── database.sql                       # Script SQL complet de création de la base et des tables
+├── index.php                          # Routeur frontal unique (Front Controller)
+└── README.md                          # Documentation standardisée du projet
+```
+
+---
+
+## Getting Started
+
+Suivez les étapes ci-dessous pour installer, configurer et lancer **BloodLink** sur un environnement local **XAMPP**.
+
+### Prérequis
+- **XAMPP** (PHP `8.1` ou `8.2+`, MySQL/MariaDB, Apache)
+- **Git**
+- Un navigateur web moderne (Chrome, Edge, Firefox)
+
+---
+
+## Installation
+
+1. **Cloner le dépôt GitHub dans le répertoire `htdocs` de XAMPP** :
+   ```bash
+   cd C:\xampp\htdocs
+   git clone https://github.com/Bacem-Trimech/Esprit-PIWEB-2A6-2026-BloodLink.git
+   cd Esprit-PIWEB-2A6-2026-BloodLink
+   ```
+
+2. **Démarrer les services Apache et MySQL** depuis le panneau de contrôle XAMPP.
+
+3. **Importer la base de données** :
+   - Ouvrir `http://localhost/phpmyadmin`
+   - Importer le fichier `database.sql` situé à la racine du projet (il crée automatiquement la base `bloodlink_piweb_2a6` et l’ensemble des tables).
+
+4. **Vérifier la configuration PDO** dans `config/config.php` :
+   - Hôte par défaut : `127.0.0.1`
+   - Base de données : `bloodlink_piweb_2a6`
+   - Utilisateur : `root` (mot de passe vide par défaut sur XAMPP)
+   - Ces paramètres peuvent également être surchargés via les variables d’environnement `BLOODLINK_DB_HOST`, `BLOODLINK_DB_NAME`, `BLOODLINK_DB_USER` et `BLOODLINK_DB_PASS`.
+
+---
+
+## Utilisation
+
+Ouvrir l’application dans le navigateur :
+```text
+http://localhost/Esprit-PIWEB-2A6-2026-BloodLink/
+```
+*(ou sur le port configuré pour Apache, par exemple `http://127.0.0.1:8088/Esprit-PIWEB-2A6-2026-BloodLink/`).*
+
+### Comptes de démonstration préconfigurés
+Tous les comptes de démonstration utilisent le mot de passe : `abcdefghijklmnop`
+
+| Rôle | E-mail de connexion | Espace principal |
+| :--- | :--- | :--- |
+| **Administrateur** | `bacemtrimech6@gmail.com` | `index.php?page=tableau-bord` |
+| **Responsable de collecte** | `responsable.demo@bloodlink.test` | `index.php?page=gestion-collectes` |
+| **Donneur 1** | `demo.donneur1@bloodlink.test` | `index.php?page=collectes` |
+| **Donneur 2** | `demo.donneur2@bloodlink.test` | `index.php?page=collectes` |
+| **Donneur 3** | `demo.donneur3@bloodlink.test` | `index.php?page=collectes` |
+
+---
+
+## Academic Context
+
+This repository is an academic engineering project developed at **Esprit School of Engineering** (École Supérieure Privée d'Ingénierie et de Technologies, Tunis, Tunisia) during the **2026–2027** academic year.
+
+- **Institution**: **Esprit School of Engineering**
+- **Module**: Projet Intégré Technologies Web (**PIWEB**)
+- **Class**: **2A6**
+- **Repository Naming Standard**: `Esprit-PIWEB-2A6-2026-BloodLink`
+- **Recommended GitHub Topics**: `esprit-school-of-engineering`, `academic-project`, `esprit-piweb`, `2026-2027`, `php-mvc`, `mysql`, `blood-donation`
+
+---
+
+## Contributors
+
+Projet réalisé en travail collaboratif au sein de la classe **2A6** à **Esprit School of Engineering** :
+
+- **Bacem Trimech** — Branche `BloodLink-Bacem` (Gestion des utilisateurs, sécurité & sessions, collectes de sang, suivi médical & laboratoire, alertes SOS et tableaux de bord analytiques)
+- **Khalil** — Branche `AnnuaireMedicale-Khalil`
+- **Iyed** — Branche `Laboratoires-Iyed`
+- **Alaa** — Branche `Pharmacies-Alaa`
+- **Hedia** — Branche `RendezVous-Hedia`
+
+---
+
+## Contributions
+
+Le développement suit un flux collaboratif Git structuré :
+1. Chaque membre développe son module sur sa branche dédiée et suit ses tâches dans le **GitHub Project Board** associé au dépôt.
+2. Les modifications sont vérifiées (`php -l`), commitées avec des messages explicites et fusionnées pour l’intégration finale sur la machine de validation du groupe.
+
+---
+
+## Acknowledgments
+
+- L’équipe pédagogique et les tuteurs du module **PIWEB** à **Esprit School of Engineering** pour leurs guides d’architecture MVC, d’intégration de templates, de sécurité des sessions PHP et de standardisation GitHub.
+- Références médicales consultées pour les règles de sécurité transfusionnelle (intervalle de 12 semaines et volume de 420–480 ml) : [Organisation Mondiale de la Santé (OMS)](https://iris.who.int/bitstream/handle/10665/76724/9789241548519_eng.pdf?sequence=1) et [Idaraty Tunisie — Don du sang total](https://www.idaraty.tn/fr/public/fr/public/index.php/fr/procedures/don-du-sang-total).
+
+---
+
+## Licence
+
+Projet académique développé à **Esprit School of Engineering** (2026–2027). Le générateur QR embarqué (`public/assets/js/vendor/qrcode.js` par Kazuhiko Arase) est distribué sous licence **MIT**.

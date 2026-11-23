@@ -15,9 +15,25 @@ final class AuthController
         if (strlen($pass) < 12) $errors[] = 'Le mot de passe doit contenir au moins 12 caractères.';
         if ($pass !== (string)($post['confirmation'] ?? '')) $errors[] = 'Les mots de passe ne correspondent pas.';
         if ($errors) return $errors;
+
+        $utilisateur = new Utilisateur(
+            null,
+            $nom,
+            $email,
+            password_hash($pass, PASSWORD_DEFAULT),
+            'DONNEUR',
+            true
+        );
+
         try {
-            $q = connexion()->prepare('INSERT INTO utilisateurs (nom,email,mot_de_passe,role,actif) VALUES (?,?,?,"DONNEUR",1)');
-            $q->execute([$nom, $email, password_hash($pass, PASSWORD_DEFAULT)]);
+            $q = connexion()->prepare('INSERT INTO utilisateurs (nom,email,mot_de_passe,role,actif) VALUES (?,?,?,?,?)');
+            $q->execute([
+                $utilisateur->getNom(),
+                $utilisateur->getEmail(),
+                $utilisateur->getMotDePasse(),
+                $utilisateur->getRole(),
+                $utilisateur->estActif() ? 1 : 0,
+            ]);
         } catch (PDOException $error) {
             if ($error->getCode() === '23000') return ['Cette adresse e-mail est déjà utilisée.'];
             throw $error;
@@ -30,14 +46,21 @@ final class AuthController
         verifierCsrf();
         $email = mb_strtolower(trim((string)($post['email'] ?? '')));
         $pass = (string)($post['mot_de_passe'] ?? '');
-        $q = connexion()->prepare('SELECT id,mot_de_passe,role,actif FROM utilisateurs WHERE email = ?');
+        $q = connexion()->prepare('SELECT id,nom,email,mot_de_passe,role,actif FROM utilisateurs WHERE email = ?');
         $q->execute([$email]);
-        $user = $q->fetch();
-        if (!$user || !$user['actif'] || !password_verify($pass, $user['mot_de_passe'])) {
+        $row = $q->fetch();
+        if (!$row) {
+            return 'Identifiants incorrects ou compte désactivé.';
+        }
+        $user = Utilisateur::fromArray($row);
+        if (!$user->estActif() || !password_verify($pass, $user->getMotDePasse())) {
             return 'Identifiants incorrects ou compte désactivé.';
         }
         session_regenerate_id(true);
-        $_SESSION['user_id'] = (int)$user['id'];
+        $_SESSION['user_id'] = (int)$user->getId();
+        $_SESSION['username'] = $user->getNom();
+        $_SESSION['role'] = $user->getRole();
+        $_SESSION['last_activity'] = time();
         $_SESSION['csrf'] = bin2hex(random_bytes(32));
         return '';
     }

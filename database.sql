@@ -21,6 +21,8 @@ CREATE TABLE IF NOT EXISTS collectes (
     debut DATETIME NOT NULL,
     fin DATETIME NOT NULL,
     statut ENUM('BROUILLON','PUBLIEE','CLOTUREE') NOT NULL DEFAULT 'BROUILLON',
+    image_url VARCHAR(255) NULL,
+    galerie_json TEXT NULL,
     organisateur_id BIGINT UNSIGNED NOT NULL,
     CONSTRAINT fk_collecte_organisateur FOREIGN KEY (organisateur_id) REFERENCES utilisateurs(id),
     INDEX idx_collectes_publiques (statut, debut, ville)

@@ -1,3 +1,15 @@
 <!DOCTYPE html>
-<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#d92735"><title>Gestion · BloodLink</title><link rel="stylesheet" href="public/assets/css/bloodlink.css"><link rel="stylesheet" href="public/assets/css/app.css"><script defer src="public/assets/js/vendor/qrcode.js"></script><script defer src="public/assets/js/validation.js"></script><script defer src="public/assets/js/experience.js"></script><script defer src="public/assets/js/forms.js"></script></head>
-<body class="admin-shell role-<?= e(mb_strtolower((string)($current['role']??'responsable'))) ?>"><aside class="sidebar"><a class="brand" href="index.php?page=<?= ($current['role']??'')==='ADMIN'?'tableau-bord':'gestion-collectes' ?>"><span class="brand-mark">♥</span><span><strong>BloodLink</strong><small><?= ($current['role']??'')==='ADMIN'?'Administration':'Espace responsable' ?></small></span></a><div class="sidebar-label"><?= ($current['role']??'')==='ADMIN'?'ADMINISTRATION':'MA COLLECTE' ?></div><nav class="side-nav"><?php if (($current['role']??'')==='ADMIN'): ?><a href="index.php?page=tableau-bord" <?= $page==='tableau-bord'?'aria-current="page"':'' ?>>▦ Tableau de bord</a><?php endif; ?><a href="index.php?page=gestion-collectes" <?= in_array($page,['gestion-collectes','collecte-gestion','collecte-formulaire'],true)?'aria-current="page"':'' ?>>▦ Collectes</a><a href="index.php?page=scan-donneur" <?= $page==='scan-donneur'?'aria-current="page"':'' ?>>▣ Identifier un donneur</a><?php if (($current['role']??'')==='ADMIN'): ?><a href="index.php?page=utilisateurs">♙ Utilisateurs</a><a href="index.php?page=inviter-responsable">✉ Inviter un responsable</a><a href="index.php?page=gestion-sos">♡ Alertes SOS</a><?php endif; ?><?php if (($current['role']??'')==='RESPONSABLE'): ?><a href="index.php?page=parametres" <?= $page==='parametres'?'aria-current="page"':'' ?>>⚙ Paramètres des collectes</a><?php endif; ?><a href="index.php?page=profil">Mon compte</a><?php if (($current['role']??'')==='ADMIN'): ?><a class="public-preview" href="index.php?page=collectes">↗ Voir le site public</a><?php endif; ?></nav></aside><div class="admin-main"><header class="admin-topbar"><div><span class="eyebrow">BLOODLINK / <?= ($current['role']??'')==='ADMIN'?'ADMINISTRATION':'RESPONSABLE' ?></span><h1><?= e(ucfirst(str_replace('-', ' ', $page))) ?></h1></div><form method="post" action="index.php?page=deconnexion"><input type="hidden" name="csrf" value="<?= e(jetonCsrf()) ?>"><button class="button button-quiet">Déconnexion</button></form></header><main class="page-content"><?= $content ?></main></div></body></html>
+<html lang="fr">
+<head>
+  <?php require_once __DIR__ . '/partials/head.php'; ?>
+  <?php require_once __DIR__ . '/partials/scripts.php'; ?>
+</head>
+<body class="admin-shell role-<?= e(mb_strtolower((string)($current['role'] ?? 'responsable'))) ?>">
+  <?php require_once __DIR__ . '/partials/sidebar.php'; ?>
+  <div class="admin-main">
+    <?php require_once __DIR__ . '/partials/header.php'; ?>
+    <main class="page-content"><?= $content ?></main>
+    <?php require_once __DIR__ . '/partials/footer.php'; ?>
+  </div>
+</body>
+</html>

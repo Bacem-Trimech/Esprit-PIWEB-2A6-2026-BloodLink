@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" width="800" height="420">
+  <defs>
+    <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8f1120"/>
+      <stop offset="48%" stop-color="#c91e2e"/>
+      <stop offset="100%" stop-color="#f04b59"/>
+    </linearGradient>
+    <linearGradient id="card1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.06"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="420" fill="url(#bg1)"/>
+  <circle cx="680" cy="80" r="190" fill="#ffffff" fill-opacity="0.07"/>
+  <circle cx="130" cy="360" r="210" fill="#ffffff" fill-opacity="0.06"/>
+  <circle cx="420" cy="210" r="150" fill="#ffffff" fill-opacity="0.08"/>
+  <!-- Medical Cross & Center Silhouette -->
+  <rect x="70" y="90" width="250" height="240" rx="28" fill="url(#card1)" stroke="#ffffff" stroke-opacity="0.25" stroke-width="2"/>
+  <rect x="172" y="138" width="46" height="134" rx="10" fill="#ffffff" fill-opacity="0.92"/>
+  <rect x="128" y="182" width="134" height="46" rx="10" fill="#ffffff" fill-opacity="0.92"/>
+  <!-- Blood Drop & Pulse Wave -->
+  <path d="M565 86 C565 86 645 178 645 232 C645 277 609 312 565 312 C521 312 485 277 485 232 C485 178 565 86 565 86 Z" fill="#ffffff" fill-opacity="0.94"/>
+  <path d="M542 232 L556 232 L564 210 L574 254 L583 224 L594 232 L610 232" fill="none" stroke="#c91e2e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M320 270 L395 270 L412 232 L430 306 L448 252 L464 270 L500 270" fill="none" stroke="#ffffff" stroke-opacity="0.75" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
