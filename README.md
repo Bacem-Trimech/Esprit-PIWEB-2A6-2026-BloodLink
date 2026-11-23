@@ -51,8 +51,9 @@ Esprit-PIWEB-2A6-2026-BloodLink/
 ├── View/
 │   ├── front-office/          # Vues publiques et donneur (includes/)
 │   └── back-office/           # Vues admin et responsable (partials/)
+├── database/
+│   └── database.sql           # Schéma MySQL
 ├── public/                    # Assets CSS/JS, images et uploads
-├── database.sql               # Schéma MySQL
 └── index.php                  # Routeur principal
 ```
 
@@ -65,7 +66,7 @@ Esprit-PIWEB-2A6-2026-BloodLink/
    git clone https://github.com/Bacem-Trimech/Esprit-PIWEB-2A6-2026-BloodLink.git
    ```
 2. **Démarrer Apache et MySQL** dans XAMPP.
-3. **Importer `database.sql`** dans `http://localhost/phpmyadmin`.
+3. **Importer `database/database.sql`** dans `http://localhost/phpmyadmin`.
 4. **Ouvrir l’application** : `http://localhost/Esprit-PIWEB-2A6-2026-BloodLink/`
 
 ---
