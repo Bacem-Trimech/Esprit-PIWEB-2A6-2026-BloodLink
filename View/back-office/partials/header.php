@@ -1,3 +1,4 @@
+<?php $curRole = (string)($current['role'] ?? 'RESPONSABLE'); ?>
 <header class="admin-topbar">
   <div class="topbar-left">
     <button type="button" class="sidebar-toggle-btn" data-toggle-sidebar aria-label="Masquer ou afficher le menu latéral" title="Masquer / afficher le menu latéral">
@@ -6,10 +7,10 @@
         <line x1="9" y1="3" x2="9" y2="21"/>
       </svg>
     </button>
-    <span class="eyebrow">BLOODLINK / <?= ($current['role'] ?? '') === 'ADMIN' ? 'DIRECTION & STATISTIQUES' : 'OPÉRATIONS DE COLLECTE' ?></span>
+    <span class="eyebrow">BLOODLINK / <?= e(mb_strtoupper(Utilisateur::labelForRole($curRole))) ?></span>
   </div>
   <div class="topbar-user">
-    <span class="role-badge role-badge-<?= e(mb_strtolower((string)($current['role'] ?? 'responsable'))) ?>"><?= ($current['role'] ?? '') === 'ADMIN' ? 'Administrateur' : 'Responsable de collecte' ?></span>
+    <span class="role-badge role-badge-<?= e(mb_strtolower($curRole)) ?>"><?= e(Utilisateur::labelForRole($curRole)) ?></span>
     <form method="post" action="index.php?page=deconnexion">
       <input type="hidden" name="csrf" value="<?= e(jetonCsrf()) ?>">
       <button class="button button-quiet button-small">Déconnexion</button>

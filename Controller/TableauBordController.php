@@ -19,7 +19,7 @@ final class TableauBordController
         ");
 
         $donneursActifs = (int)$db->query("SELECT COUNT(*) FROM utilisateurs WHERE role='DONNEUR' AND actif=1")->fetchColumn();
-        $responsablesActifs = (int)$db->query("SELECT COUNT(*) FROM utilisateurs WHERE role='RESPONSABLE' AND actif=1")->fetchColumn();
+        $responsablesActifs = (int)$db->query("SELECT COUNT(*) FROM utilisateurs WHERE role LIKE 'RESPONSABLE%' AND actif=1")->fetchColumn();
         $collectesTotal = (int)$db->query('SELECT COUNT(*) FROM collectes')->fetchColumn();
         $collectesPubliees = (int)$db->query("SELECT COUNT(*) FROM collectes WHERE statut='PUBLIEE'")->fetchColumn();
         $collectesCloturees = (int)$db->query("SELECT COUNT(*) FROM collectes WHERE statut='CLOTUREE'")->fetchColumn();

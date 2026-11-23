@@ -85,7 +85,7 @@ final class AnnuaireController
 
     public function sauverEtablissement(array $post, ?int $id = null): array
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_ANNUAIRE']);
         verifierCsrf();
 
         $nom = trim((string)($post['nom'] ?? ''));
@@ -125,7 +125,7 @@ final class AnnuaireController
 
     public function supprimerEtablissement(int $id): void
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_ANNUAIRE']);
         verifierCsrf();
         connexion()->prepare('DELETE FROM etablissements_sante WHERE id = ?')->execute([$id]);
     }
@@ -137,7 +137,7 @@ final class AnnuaireController
 
     public function sauverService(array $post, ?int $id = null): array
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_ANNUAIRE']);
         verifierCsrf();
 
         $etabId = (int)($post['etablissement_id'] ?? 0);
@@ -169,7 +169,7 @@ final class AnnuaireController
 
     public function supprimerService(int $id): void
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_ANNUAIRE']);
         verifierCsrf();
         connexion()->prepare('DELETE FROM services_medicaux WHERE id = ?')->execute([$id]);
     }

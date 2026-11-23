@@ -22,7 +22,7 @@ final class PharmacieController
 
     public function donneesAdmin(): array
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_PHARMACIE']);
         return [
             'pharmacies' => $this->service->pharmacies(),
             'medicaments' => $this->service->medicaments(),
@@ -33,7 +33,7 @@ final class PharmacieController
 
     public function sauverMedicament(array $post, int $id = 0): array
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_PHARMACIE']);
         verifierCsrf();
 
         $name = trim((string)($post['name'] ?? ''));
@@ -58,14 +58,14 @@ final class PharmacieController
 
     public function supprimerMedicament(int $id): void
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_PHARMACIE']);
         verifierCsrf();
         $this->service->deleteMedicament($id);
     }
 
     public function sauverGarde(array $post, int $id = 0): array
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_PHARMACIE']);
         verifierCsrf();
 
         $etabId = (int)($post['etablissement_id'] ?? 0);
@@ -90,14 +90,14 @@ final class PharmacieController
 
     public function supprimerGarde(int $id): void
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_PHARMACIE']);
         verifierCsrf();
         $this->service->deleteGarde($id);
     }
 
     public function sauverStock(array $post): array
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_PHARMACIE']);
         verifierCsrf();
 
         $etabId = (int)($post['etablissement_id'] ?? 0);
@@ -116,7 +116,7 @@ final class PharmacieController
 
     public function supprimerStock(int $id): void
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_PHARMACIE']);
         verifierCsrf();
         $this->service->deleteStock($id);
     }

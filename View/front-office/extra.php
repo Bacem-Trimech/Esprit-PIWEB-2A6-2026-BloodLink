@@ -1,5 +1,5 @@
 <?php
-$isStaffProfile = ($current && in_array($current['role'] ?? '', ['ADMIN','RESPONSABLE'], true));
+$isStaffProfile = ($current && in_array($current['role'] ?? '', Utilisateur::ROLES_STAFF, true));
 ?>
 <div class="<?= $isStaffProfile ? 'staff-profile-wrap' : 'page-wrap' ?>">
 <?php if (!$isStaffProfile): ?>
@@ -19,7 +19,7 @@ $isStaffProfile = ($current && in_array($current['role'] ?? '', ['ADMIN','RESPON
       <section class="form-panel profile-card">
         <span class="eyebrow">IDENTITÉ DU COMPTE</span>
         <h2>Informations générales</h2>
-        <p class="muted">Compte <?= ($current['role']??'')==='ADMIN' ? 'administrateur' : 'responsable de collecte' ?>.</p>
+        <p class="muted">Compte <?= e(Utilisateur::labelForRole((string)($current['role'] ?? ''))) ?>.</p>
         <form method="post" action="index.php?page=profil-sauver" data-validate="profil">
           <input type="hidden" name="csrf" value="<?= e(jetonCsrf()) ?>">
           <div class="form-grid">

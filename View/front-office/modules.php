@@ -18,8 +18,8 @@
       <h1>Établissements de santé</h1>
       <p>Consultez les hôpitaux, cliniques, pharmacies et laboratoires reliés à leurs services, praticiens et stocks en temps réel.</p>
     </div>
-    <?php if ($current && $current['role'] === 'ADMIN'): ?>
-      <a class="button button-primary" href="index.php?page=admin-annuaire">Gérer l’annuaire (Admin)</a>
+    <?php if ($current && in_array($current['role'], ['ADMIN', 'RESPONSABLE_ANNUAIRE'], true)): ?>
+      <a class="button button-primary" href="index.php?page=admin-annuaire">Gérer l’annuaire</a>
     <?php endif; ?>
   </div>
 
@@ -190,8 +190,8 @@
       <h1>Prendre un rendez-vous médical</h1>
       <p>Choisissez un praticien rattaché à un établissement de l’annuaire et réservez un horaire en format 24h.</p>
     </div>
-    <?php if ($current && $current['role'] === 'ADMIN'): ?>
-      <a class="button button-primary" href="index.php?page=admin-rendez-vous">Gérer les RDV (Admin)</a>
+    <?php if ($current && in_array($current['role'], ['ADMIN', 'RESPONSABLE_RDV'], true)): ?>
+      <a class="button button-primary" href="index.php?page=admin-rendez-vous">Gérer les RDV</a>
     <?php endif; ?>
   </div>
 
@@ -317,8 +317,8 @@
       <h1>Pharmacies & Recherche de médicaments</h1>
       <p>Trouvez les pharmacies de garde aujourd’hui et vérifiez les stocks de médicaments en direct (reliés à l’Annuaire Médical).</p>
     </div>
-    <?php if ($current && $current['role'] === 'ADMIN'): ?>
-      <a class="button button-primary" href="index.php?page=admin-pharmacies">Gérer les pharmacies (Admin)</a>
+    <?php if ($current && in_array($current['role'], ['ADMIN', 'RESPONSABLE_PHARMACIE'], true)): ?>
+      <a class="button button-primary" href="index.php?page=admin-pharmacies">Gérer les pharmacies</a>
     <?php endif; ?>
   </div>
 
@@ -403,8 +403,8 @@
       <h1>Analyses biologiques & Comptes rendus</h1>
       <p>Consultez le catalogue des analyses médicales (tarifs, délais, conditions à jeun) et accédez à vos comptes rendus validés.</p>
     </div>
-    <?php if ($current && $current['role'] === 'ADMIN'): ?>
-      <a class="button button-primary" href="index.php?page=admin-laboratoires">Gérer le laboratoire (Admin)</a>
+    <?php if ($current && in_array($current['role'], ['ADMIN', 'RESPONSABLE_LABO'], true)): ?>
+      <a class="button button-primary" href="index.php?page=admin-laboratoires">Gérer le laboratoire</a>
     <?php endif; ?>
   </div>
 

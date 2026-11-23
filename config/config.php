@@ -25,8 +25,27 @@ class Database
     private static function assurerSchemaIntegre(PDO $pdo): void
     {
         try {
+            $pdo->exec("ALTER TABLE utilisateurs MODIFY COLUMN role ENUM('DONNEUR','RESPONSABLE','RESPONSABLE_ANNUAIRE','RESPONSABLE_RDV','RESPONSABLE_PHARMACIE','RESPONSABLE_LABO','ADMIN') NOT NULL DEFAULT 'DONNEUR'");
             $pdo->exec("ALTER TABLE collectes ADD COLUMN IF NOT EXISTS image_url VARCHAR(255) NULL AFTER statut");
             $pdo->exec("ALTER TABLE collectes ADD COLUMN IF NOT EXISTS galerie_json TEXT NULL AFTER image_url");
+
+            // Comptes responsables dédiés par module (mot de passe de démonstration : abcdefghijklmnop)
+            $staffSeeds = [
+                ['Responsable Annuaire', 'responsable.annuaire@bloodlink.test', 'RESPONSABLE_ANNUAIRE', 'Tunis', '71 578 010'],
+                ['Responsable Rendez-vous', 'responsable.rdv@bloodlink.test', 'RESPONSABLE_RDV', 'Tunis', '71 885 020'],
+                ['Responsable Pharmacie', 'responsable.pharmacie@bloodlink.test', 'RESPONSABLE_PHARMACIE', 'Hammamet', '72 280 100'],
+                ['Responsable Laboratoire', 'responsable.labo@bloodlink.test', 'RESPONSABLE_LABO', 'Tunis', '71 783 022'],
+            ];
+            $qCheckStaff = $pdo->prepare('SELECT id FROM utilisateurs WHERE email = ? LIMIT 1');
+            $qInsStaff = $pdo->prepare("INSERT INTO utilisateurs (nom, email, mot_de_passe, role, actif, telephone, ville, profil_complet, avatar_couleur) VALUES (?,?,?,?,1,?,?,1,'#D92735')");
+            $demoHash = null;
+            foreach ($staffSeeds as [$sNom, $sEmail, $sRole, $sVille, $sTel]) {
+                $qCheckStaff->execute([$sEmail]);
+                if (!$qCheckStaff->fetchColumn()) {
+                    $demoHash ??= password_hash('abcdefghijklmnop', PASSWORD_DEFAULT);
+                    $qInsStaff->execute([$sNom, $sEmail, $demoHash, $sRole, $sTel, $sVille]);
+                }
+            }
 
             // Module 1 : Annuaire Médical (partagé avec Pharmacies, Rendez-vous et Laboratoires)
             $pdo->exec("CREATE TABLE IF NOT EXISTS etablissements_sante (

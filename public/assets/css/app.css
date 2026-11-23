@@ -72,7 +72,7 @@ body{color:#17243a;background:#f2eaed}
 .text-amber{color:#a34806!important;font-weight:700}
 .role-badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:.74rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
 .role-badge-admin{background:#eef3ff;color:#2753b8;border:1px solid #cddBfa}
-.role-badge-responsable{background:#fff0f1;color:#c81e2d;border:1px solid #f7c7cd}
+.role-badge-responsable,.role-badge-responsable_annuaire,.role-badge-responsable_rdv,.role-badge-responsable_pharmacie,.role-badge-responsable_labo{background:#fff0f1;color:#c81e2d;border:1px solid #f7c7cd}
 .role-badge-donneur{background:#ecfdf5;color:#117a56;border:1px solid #bfead7}
 .topbar-user{display:flex;align-items:center;gap:10px}
 .card-badges{display:flex;align-items:center;gap:8px;flex-wrap:wrap}

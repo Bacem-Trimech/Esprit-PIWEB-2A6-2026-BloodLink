@@ -27,7 +27,7 @@ final class UtilisateurController
 
         // Pour un compte existant, l'administrateur modifie uniquement le rôle (jamais le nom, l'e-mail ou le mot de passe)
         if ($id !== null && $id > 0) {
-            if (!in_array($role, ['DONNEUR','RESPONSABLE','ADMIN'], true)) {
+            if (!array_key_exists($role, Utilisateur::ROLES)) {
                 return ['Rôle invalide.'];
             }
             if ($id === (int)$admin['id'] && $role !== 'ADMIN') {

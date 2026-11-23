@@ -39,7 +39,7 @@ final class RendezVousController
 
     public function sauverPraticien(array $post, ?int $id = null): array
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_RDV']);
         verifierCsrf();
 
         $nom = trim((string)($post['nom'] ?? ''));
@@ -81,7 +81,7 @@ final class RendezVousController
 
     public function supprimerPraticien(int $id): void
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_RDV']);
         verifierCsrf();
         connexion()->prepare('DELETE FROM praticiens WHERE id_praticien = ?')->execute([$id]);
     }
@@ -114,7 +114,7 @@ final class RendezVousController
         $motif = trim((string)($post['motif'] ?? ''));
         $patientNom = trim((string)($post['patient_nom'] ?? $user['nom']));
         $patientTel = trim((string)($post['patient_telephone'] ?? ($user['telephone'] ?? '')));
-        $statut = ($user['role'] === 'ADMIN' && in_array((string)($post['statut'] ?? ''), RendezVous::STATUTS, true))
+        $statut = (in_array($user['role'], ['ADMIN', 'RESPONSABLE_RDV'], true) && in_array((string)($post['statut'] ?? ''), RendezVous::STATUTS, true))
             ? (string)$post['statut']
             : 'En attente';
 
@@ -141,7 +141,7 @@ final class RendezVousController
 
     public function changerStatut(int $id, string $statut): void
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_RDV']);
         verifierCsrf();
         if (!in_array($statut, RendezVous::STATUTS, true)) {
             throw new RuntimeException('Statut de rendez-vous invalide.');
@@ -153,7 +153,7 @@ final class RendezVousController
     {
         $user = exigerConnexion();
         verifierCsrf();
-        if ($user['role'] === 'ADMIN') {
+        if (in_array($user['role'], ['ADMIN', 'RESPONSABLE_RDV'], true)) {
             connexion()->prepare("UPDATE rendez_vous SET statut = 'Annulé' WHERE id_rendezvous = ?")->execute([$id]);
             return;
         }
@@ -163,7 +163,7 @@ final class RendezVousController
 
     public function supprimerRendezVous(int $id): void
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_RDV']);
         verifierCsrf();
         connexion()->prepare('DELETE FROM rendez_vous WHERE id_rendezvous = ?')->execute([$id]);
     }

@@ -30,6 +30,12 @@ final class LaboratoireController
         return connexion()->query("SELECT * FROM etablissements_sante WHERE type = 'laboratoire' ORDER BY nom ASC")->fetchAll();
     }
 
+    public function listerPatientsPourLabo(): array
+    {
+        exigerRole(['ADMIN','RESPONSABLE_LABO']);
+        return connexion()->query("SELECT id, nom, email FROM utilisateurs WHERE actif = 1 ORDER BY nom ASC")->fetchAll();
+    }
+
     public function listerComptesRendus(?int $utilisateurId = null, ?string $recherchePatient = null): array
     {
         $sql = 'SELECT c.*, a.nom AS analyse_nom, a.type_echantillon, a.prix,
@@ -57,7 +63,7 @@ final class LaboratoireController
 
     public function sauverAnalyse(array $post, ?int $id = null): array
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_LABO']);
         verifierCsrf();
 
         $nom = trim((string)($post['nom'] ?? ''));
@@ -90,14 +96,14 @@ final class LaboratoireController
 
     public function supprimerAnalyse(int $id): void
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_LABO']);
         verifierCsrf();
         connexion()->prepare('DELETE FROM analyse_medicale WHERE id = ?')->execute([$id]);
     }
 
     public function sauverCompteRendu(array $post, ?int $id = null): array
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_LABO']);
         verifierCsrf();
 
         $idAnalyse = (int)($post['id_analyse'] ?? 0);
@@ -136,7 +142,7 @@ final class LaboratoireController
 
     public function supprimerCompteRendu(int $id): void
     {
-        exigerRole(['ADMIN']);
+        exigerRole(['ADMIN','RESPONSABLE_LABO']);
         verifierCsrf();
         connexion()->prepare('DELETE FROM compte_rendu_analyse WHERE id = ?')->execute([$id]);
     }

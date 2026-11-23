@@ -33,7 +33,7 @@ try {
                     if ($message==='') {
                         $current=utilisateur();
                         if (!$current['profil_complet']) { $_SESSION['bienvenue']=true; rediriger('profil'); }
-                        rediriger(match($current['role']) {'ADMIN'=>'tableau-bord','RESPONSABLE'=>'gestion-collectes',default=>'mes-participations'});
+                        rediriger(Utilisateur::homePageForRole((string)$current['role']));
                     }
                     http_response_code(422);
                     break;
@@ -260,8 +260,7 @@ try {
     }
     if ($page==='accueil' && $current) {
         if (!$current['profil_complet']) rediriger('profil');
-        if ($current['role']==='ADMIN') rediriger('tableau-bord');
-        if ($current['role']==='RESPONSABLE') rediriger('gestion-collectes');
+        if ($current['role']!=='DONNEUR') rediriger(Utilisateur::homePageForRole((string)$current['role']));
     }
     if ($current && $current['role']==='DONNEUR') {
         $eligibilite=$collectes->etatEligibiliteDonneur((int)$current['id']);
@@ -321,14 +320,14 @@ try {
             ];
             $tableau->compterVue(); break;
         case 'admin-annuaire':
-            exigerRole(['ADMIN']);
+            exigerRole(['ADMIN','RESPONSABLE_ANNUAIRE']);
             $moduleData=[
                 'etablissements'=>$annuaire->listerEtablissements(),
                 'services'=>$annuaire->listerServices(),
             ];
             break;
         case 'admin-rendez-vous':
-            exigerRole(['ADMIN']);
+            exigerRole(['ADMIN','RESPONSABLE_RDV']);
             $moduleData=[
                 'rendezVous'=>$rdvCtrl->listerRendezVous(),
                 'praticiens'=>$rdvCtrl->listerPraticiens(),
@@ -336,15 +335,16 @@ try {
             ];
             break;
         case 'admin-pharmacies':
+            exigerRole(['ADMIN','RESPONSABLE_PHARMACIE']);
             $moduleData=$pharmacieCtrl->donneesAdmin();
             break;
         case 'admin-laboratoires':
-            exigerRole(['ADMIN']);
+            exigerRole(['ADMIN','RESPONSABLE_LABO']);
             $moduleData=[
                 'analyses'=>$laboCtrl->listerAnalyses(),
                 'laboratoires'=>$laboCtrl->laboratoires(),
                 'comptesRendus'=>$laboCtrl->listerComptesRendus(),
-                'utilisateurs'=>$users->liste(),
+                'utilisateurs'=>$laboCtrl->listerPatientsPourLabo(),
             ];
             break;
         case 'tableau-bord': $stats=$tableau->chiffres(); break;
@@ -383,7 +383,7 @@ try {
     }
     if (!in_array($page,['connexion','inscription','activer','profil','utilisateur-formulaire','collecte-formulaire','collecte-gestion','sos-nouveau','parametres','inviter-responsable','rendez-vous','admin-annuaire','admin-rendez-vous','admin-pharmacies','admin-laboratoires'],true)) $page='erreur';
 }
-$staffProfil=($page==='profil' && $current && in_array($current['role'],['ADMIN','RESPONSABLE'],true));
+$staffProfil=($page==='profil' && $current && in_array($current['role'],Utilisateur::ROLES_STAFF,true));
 $adminPage=$staffProfil || in_array($page,['tableau-bord','gestion-sos','parametres','inviter-responsable','utilisateurs','utilisateur-formulaire','gestion-collectes','collecte-formulaire','collecte-gestion','scan-donneur','admin-annuaire','admin-rendez-vous','admin-pharmacies','admin-laboratoires'],true);
 ob_start();
 require __DIR__.($adminPage?'/View/back-office/page.php':'/View/front-office/page.php');

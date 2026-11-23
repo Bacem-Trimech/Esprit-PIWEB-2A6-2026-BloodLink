@@ -1,4 +1,4 @@
-<div class="page-intro"><div><span class="eyebrow"><?= ($current['role']??'')==='ADMIN'?'PORTAIL D’ADMINISTRATION':'ESPACE RESPONSABLE DE COLLECTE' ?></span><h1><?php
+<div class="page-intro"><div><span class="eyebrow"><?= ($current['role']??'')==='ADMIN'?'PORTAIL D’ADMINISTRATION':'ESPACE ' . e(mb_strtoupper(Utilisateur::labelForRole((string)($current['role']??'RESPONSABLE')))) ?></span><h1><?php
 echo match($page) {
     'utilisateurs'=>'Utilisateurs et rôles',
     'utilisateur-formulaire'=>'Ajouter un compte donneur',
@@ -38,7 +38,7 @@ echo match($page) {
       <tr data-search-row>
         <td><strong>#<?= (int)$u['id'] ?> · <?= e($u['nom']) ?></strong></td>
         <td><?= e($u['email']) ?></td>
-        <td><span class="role-badge role-badge-<?= e(mb_strtolower((string)$u['role'])) ?>"><?= e($u['role']) ?></span></td>
+        <td><span class="role-badge role-badge-<?= e(mb_strtolower((string)$u['role'])) ?>"><?= e(Utilisateur::labelForRole((string)$u['role'])) ?></span></td>
         <td><?= $u['actif'] ? '<span class="badge-inline badge-ok">Actif</span>' : '<span class="badge-inline badge-warn">Désactivé</span>' ?></td>
         <td class="table-actions">
           <?php if ((int)$u['id'] !== (int)$current['id']): ?>
@@ -46,8 +46,8 @@ echo match($page) {
               <input type="hidden" name="csrf" value="<?= e(jetonCsrf()) ?>">
               <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
               <select name="role" aria-label="Rôle de <?= e($u['nom']) ?>">
-                <?php foreach (['DONNEUR','RESPONSABLE','ADMIN'] as $r): ?>
-                  <option value="<?= $r ?>" <?= $u['role']===$r ? 'selected' : '' ?>><?= $r ?></option>
+                <?php foreach (Utilisateur::ROLES as $rKey => $rLabel): ?>
+                  <option value="<?= e($rKey) ?>" <?= $u['role']===$rKey ? 'selected' : '' ?>><?= e($rLabel) ?></option>
                 <?php endforeach; ?>
               </select>
               <button class="button button-outline button-small">Changer rôle</button>

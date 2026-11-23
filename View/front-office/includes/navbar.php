@@ -13,7 +13,7 @@
     <?php if ($current && $current['role'] === 'DONNEUR'): ?>
       <a href="index.php?page=mes-participations" <?= in_array($page, ['mes-participations', 'mes-examens', 'mon-qr'], true) ? 'class="active"' : '' ?>>Mes dons</a>
     <?php elseif ($current): ?>
-      <a href="index.php?page=<?= $current['role'] === 'ADMIN' ? 'tableau-bord' : 'gestion-collectes' ?>">← Mon espace</a>
+      <a href="index.php?page=<?= e(Utilisateur::homePageForRole((string)$current['role'])) ?>">← Mon espace</a>
     <?php endif; ?>
   </nav>
   <div class="header-actions">

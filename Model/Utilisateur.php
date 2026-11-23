@@ -3,6 +3,43 @@ declare(strict_types=1);
 
 final class Utilisateur
 {
+    public const ROLES = [
+        'DONNEUR' => 'Donneur / Patient',
+        'RESPONSABLE' => 'Responsable Collecte (BloodLink)',
+        'RESPONSABLE_ANNUAIRE' => 'Responsable Annuaire Médical',
+        'RESPONSABLE_RDV' => 'Responsable Rendez-vous',
+        'RESPONSABLE_PHARMACIE' => 'Responsable Pharmacie',
+        'RESPONSABLE_LABO' => 'Responsable Laboratoire',
+        'ADMIN' => 'Administrateur',
+    ];
+
+    public const ROLES_STAFF = [
+        'ADMIN',
+        'RESPONSABLE',
+        'RESPONSABLE_ANNUAIRE',
+        'RESPONSABLE_RDV',
+        'RESPONSABLE_PHARMACIE',
+        'RESPONSABLE_LABO',
+    ];
+
+    public static function homePageForRole(string $role): string
+    {
+        return match ($role) {
+            'ADMIN' => 'tableau-bord',
+            'RESPONSABLE' => 'gestion-collectes',
+            'RESPONSABLE_ANNUAIRE' => 'admin-annuaire',
+            'RESPONSABLE_RDV' => 'admin-rendez-vous',
+            'RESPONSABLE_PHARMACIE' => 'admin-pharmacies',
+            'RESPONSABLE_LABO' => 'admin-laboratoires',
+            default => 'mes-participations',
+        };
+    }
+
+    public static function labelForRole(string $role): string
+    {
+        return self::ROLES[$role] ?? $role;
+    }
+
     public function __construct(
         private ?int $id = null,
         private string $nom = '',
