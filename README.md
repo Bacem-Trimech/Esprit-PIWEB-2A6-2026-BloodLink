@@ -111,7 +111,7 @@ Projet développé à **Esprit School of Engineering** dans le cadre du module *
 | **`ParticipationCollecte`** | `Participation` + `Examen` + `Don` + `Labo` | Inscription, arrivée, examen pré-don, poche prélevée et résultat labo. | `id (PK)`, `collecte_id (FK)`, `creneau_id (FK)`, `donneur_id (FK)`, `mode`, `statut`, `code_confirmation`, `arrivee_le`, `tension_sys`, `tension_dia`, `pouls`, `temperature_c`, `hemoglobine`, `poids_kg`, `decision`, `volume_ml`, `numero_poche`, `effectue_le`, `groupe_confirme`, `vih`, `vhb`, `vhc`, `syphilis`, `statut_labo`, `prochain_don_le` |
 | **`AlerteSos`** | Irréductible | Alerte urgente publique valable 2 heures. | `id (PK)`, `lieu`, `ville`, `groupe_receveur`, `telephone`, `message`, `cree_le`, `expire_le` |
 
-### 3. Diagramme de Classes
+### 3. Diagramme de Classes (9 Entités)
 
 ```mermaid
 classDiagram
@@ -125,4 +125,16 @@ classDiagram
     ParticipationCollecte "1" -- "0..1" ExamenPreDon : examen
     ParticipationCollecte "1" -- "0..1" DonSang : prelevement
     ParticipationCollecte "1" -- "0..1" ResultatLaboratoire : laboratoire
+```
+
+### 4. Diagramme de Classes Fusionné (4 Entités + 1 `Utilisateur`)
+
+```mermaid
+classDiagram
+    Utilisateur "1" -- "0..*" CollecteSang : organise
+    Utilisateur "1" -- "0..*" ParticipationCollecte : participe
+    Utilisateur "0..1" ..> "0..*" AlerteSos : modere
+    CollecteSang "1" *-- "1..*" CreneauCollecte : contient
+    CollecteSang "1" -- "0..*" ParticipationCollecte : accueille
+    CreneauCollecte "0..1" -- "0..*" ParticipationCollecte : reserve
 ```
