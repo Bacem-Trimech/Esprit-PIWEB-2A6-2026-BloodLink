@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Back Office - Établissements</title><link rel="stylesheet" href="public/assets/css/style.css"></head>
+<body><header class="topbar"><a class="brand" href="index.php?action=admin-index">BloodLink <small>Back Office · Administration</small></a><nav class="nav-actions"><a class="btn secondary" href="index.php">Voir le Front Office</a><a class="btn danger" href="index.php?action=admin-logout">Déconnexion</a></nav></header>
+<main class="container"><p class="eyebrow">ADMINISTRATION</p><div class="heading-row"><div><h1>Gestion des établissements</h1><p class="lead">Ajouter, modifier et supprimer les établissements de santé.</p></div><a class="btn" href="index.php?action=admin-create">+ Ajouter un établissement</a></div>
+<?php if ($message): ?><p class="notice"><?= htmlspecialchars($message) ?></p><?php endif; ?>
+<section class="cards module-shortcuts">
+<article class="card"><h2>Services médicaux</h2><a class="btn secondary" href="index.php?action=admin-module&type=services">Gérer les services</a></article>
+<article class="card"><h2>Ressources médicales</h2><a class="btn secondary" href="index.php?action=admin-module&type=ressources">Gérer les ressources</a></article>
+<article class="card"><h2>Avis</h2><a class="btn secondary" href="index.php?action=admin-module&type=avis">Modérer les avis</a></article>
+<article class="card"><h2>Signalements</h2><a class="btn secondary" href="index.php?action=admin-module&type=signalements">Traiter les signalements</a></article>
+</section><div class="table-wrap"><table><thead><tr><th>Établissement</th><th>Type</th><th>Ville</th><th>Contact</th><th>Actions</th></tr></thead><tbody>
+<?php foreach ($etablissements as $e): ?><tr><td><strong><?= htmlspecialchars($e['nom']) ?></strong><small><?= htmlspecialchars($e['adresse']) ?></small></td><td><?= htmlspecialchars($e['type']) ?></td><td><?= htmlspecialchars($e['ville']) ?></td><td><?= htmlspecialchars($e['telephone']) ?><small><?= htmlspecialchars($e['email']) ?></small></td><td><div class="actions"><a class="btn secondary" href="index.php?action=admin-edit&id=<?= (int)$e['id'] ?>">Modifier</a><form method="post" action="index.php?action=admin-delete" onsubmit="return confirm('Confirmer la suppression ?')"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>"><input type="hidden" name="id" value="<?= (int)$e['id'] ?>"><button class="btn danger" type="submit">Supprimer</button></form></div></td></tr><?php endforeach; ?>
+<?php if (!$etablissements): ?><tr><td colspan="5">Aucun établissement enregistré.</td></tr><?php endif; ?>
+</tbody></table></div></main></body></html>
