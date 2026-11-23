@@ -140,11 +140,7 @@ Ce projet a été développé au sein d’**Esprit School of Engineering** dans 
 
 ## Contributors
 
-- **Bacem Trimech** (`BloodLink`)
-- **Khalil** (`AnnuaireMedicale`)
-- **Iyed** (`Laboratoires`)
-- **Alaa** (`Pharmacies`)
-- **Hedia** (`RendezVous`)
+- **Bacem Trimech** — Conception et développement du module **BloodLink** (Gestion des utilisateurs et des rôles, collectes de sang, suivi médical pré-don, qualification biologique en laboratoire, alertes SOS et tableaux de bord analytiques)
 
 ---
 
