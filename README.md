@@ -40,7 +40,12 @@ Application web **PHP / MySQL (MVC)** dédiée à la planification des collectes
 
 ---
 
-## Architecture
+## Installation
+1. Copier le dossier `laboratoire` dans `htdocs` (XAMPP).
+2. Importer `gslaboratoire.sql` dans phpMyAdmin.
+3. Vérifier `config.php` (user `root`, mot de passe vide, base `gslaboratoire`).
+4. Dashboard (point d'entrée) : http://localhost/laboratoire/view/backoffice/dashboard.php
+5. Front office : http://localhost/laboratoire/view/frontoffice/consulterCompteRendu.php
 
 ```text
 Esprit-PIWEB-2A6-2026-BloodLink/
