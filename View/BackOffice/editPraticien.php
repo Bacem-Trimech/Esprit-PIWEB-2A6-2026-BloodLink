@@ -48,13 +48,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Modifier praticien</title>
+    <link rel="stylesheet" href="../../public/assets/css/style.css">
+    <script src="../../public/assets/js/main.js" defer></script>
 </head>
 <body>
+<main class="container">
 <h2>Modifier un praticien</h2>
-<p style="color:red"><?= htmlspecialchars($error) ?></p>
+<p class="error"><?= htmlspecialchars($error) ?></p>
 
-<form method="POST">
+<form method="POST" class="form" novalidate>
     Nom: <input name="nom" value="<?= htmlspecialchars($p['nom']) ?>" required><br>
     Prénom: <input name="prenom" value="<?= htmlspecialchars($p['prenom']) ?>" required><br>
     Spécialité: <input name="specialite" value="<?= htmlspecialchars($p['specialite']) ?>"><br>
@@ -64,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <input type="submit" value="Modifier">
 </form>
 
-<a href="listPraticiens.php">Retour</a>
+<a class="btn btn-secondary" href="listPraticiens.php">Retour</a>
+</main>
 </body>
 </html>

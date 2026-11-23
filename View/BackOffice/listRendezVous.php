@@ -8,14 +8,18 @@ $liste = $controller->listerRendezVous();
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Liste des rendez-vous</title>
+    <link rel="stylesheet" href="../../public/assets/css/style.css">
+    <script src="../../public/assets/js/main.js" defer></script>
 </head>
 <body>
+<main class="container">
 <h2>Liste des rendez-vous</h2>
 
-<a href="addRendezVous.php">Ajouter un rendez-vous</a>
+<a class="btn" href="addRendezVous.php">Ajouter un rendez-vous</a>
 
-<table border="1">
+<table class="table">
 <tr>
     <th>ID</th>
     <th>Date</th>
@@ -39,10 +43,11 @@ $liste = $controller->listerRendezVous();
     <td>
         <a href="editRendezVous.php?id=<?= (int)$r['id_rendezvous'] ?>">Modifier</a>
         <a href="deleteRendezVous.php?id=<?= (int)$r['id_rendezvous'] ?>"
-           onclick="return confirm('Supprimer ce rendez-vous ?')">Supprimer</a>
+           data-confirm="Supprimer ce rendez-vous ?">Supprimer</a>
     </td>
 </tr>
 <?php } ?>
 </table>
+</main>
 </body>
 </html>

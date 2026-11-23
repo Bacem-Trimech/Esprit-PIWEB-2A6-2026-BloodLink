@@ -37,13 +37,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ajouter rendez-vous</title>
+    <link rel="stylesheet" href="../../public/assets/css/style.css">
+    <script src="../../public/assets/js/main.js" defer></script>
 </head>
 <body>
+<main class="container">
 <h2>Ajouter un rendez-vous</h2>
-<p style="color:red"><?= htmlspecialchars($error) ?></p>
+<p class="error"><?= htmlspecialchars($error) ?></p>
 
-<form method="POST">
+<form method="POST" class="form" novalidate>
     Date: <input type="date" name="date_rendezvous" required><br>
     Heure: <input type="time" name="heure_rendezvous" required><br>
     Motif: <textarea name="motif"></textarea><br>
@@ -68,6 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <input type="submit" value="Ajouter">
 </form>
 
-<a href="listRendezVous.php">Retour</a>
+<a class="btn btn-secondary" href="listRendezVous.php">Retour</a>
+</main>
 </body>
 </html>

@@ -1,0 +1,59 @@
+/* RendezVous - feuille de style commune (FrontOffice + BackOffice) */
+:root {
+    --primary: #c62828;
+    --primary-dark: #8e0000;
+    --bg: #f5f6f8;
+    --text: #222;
+    --border: #d9dce1;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+}
+.container {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+h1, h2 { color: var(--primary); margin-top: 0; }
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 6px 6px 6px 0;
+    background: var(--primary);
+    color: #fff;
+    text-decoration: none;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+.btn:hover { background: var(--primary-dark); }
+.btn-secondary { background: #6b7280; }
+.table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+.table th, .table td { padding: 10px; border: 1px solid var(--border); text-align: left; }
+.table th { background: #fafafa; }
+.table tr:hover td { background: #fdf3f3; }
+.table a { color: var(--primary); margin-right: 8px; }
+.form { max-width: 520px; margin-bottom: 16px; }
+.form input[type="text"], .form input[type="email"], .form input[type="date"],
+.form input[type="time"], .form input:not([type]), .form select, .form textarea {
+    display: block; width: 100%; padding: 8px; margin: 4px 0 12px;
+    border: 1px solid var(--border); border-radius: 4px; font: inherit;
+}
+.form input[type="submit"] {
+    padding: 8px 20px; background: var(--primary); color: #fff;
+    border: 0; border-radius: 4px; cursor: pointer;
+}
+.form input[type="submit"]:hover { background: var(--primary-dark); }
+.form br { display: none; }
+.error { color: var(--primary); font-weight: 600; }
+.field-error { border-color: var(--primary) !important; background: #fff6f6; }
+.field-error-msg { color: var(--primary); font-size: 13px; margin: -8px 0 10px; }

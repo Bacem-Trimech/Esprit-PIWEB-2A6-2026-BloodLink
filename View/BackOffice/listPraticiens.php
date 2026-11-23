@@ -8,14 +8,18 @@ $liste = $controller->listerPraticiens();
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Liste des praticiens</title>
+    <link rel="stylesheet" href="../../public/assets/css/style.css">
+    <script src="../../public/assets/js/main.js" defer></script>
 </head>
 <body>
+<main class="container">
 <h2>Liste des praticiens</h2>
 
-<a href="addPraticien.php">Ajouter un praticien</a>
+<a class="btn" href="addPraticien.php">Ajouter un praticien</a>
 
-<table border="1">
+<table class="table">
 <tr>
     <th>ID</th>
     <th>Nom</th>
@@ -39,10 +43,11 @@ $liste = $controller->listerPraticiens();
     <td>
         <a href="editPraticien.php?id=<?= (int)$p['id_praticien'] ?>">Modifier</a>
         <a href="deletePraticien.php?id=<?= (int)$p['id_praticien'] ?>"
-           onclick="return confirm('Supprimer ce praticien ?')">Supprimer</a>
+           data-confirm="Supprimer ce praticien ?">Supprimer</a>
     </td>
 </tr>
 <?php } ?>
 </table>
+</main>
 </body>
 </html>
