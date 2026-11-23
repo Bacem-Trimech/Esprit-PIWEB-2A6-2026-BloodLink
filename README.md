@@ -51,8 +51,9 @@ Esprit-PIWEB-2A6-2026-BloodLink/
 ├── Controller/                # Contrôleurs de l'application
 ├── Service/                   # Services et sécurité des sessions
 ├── View/
-│   ├── front-office/          # Gabarits et pages destinées aux utilisateurs
-│   └── back-office/           # Gabarits et pages destinées à l'administration
+│   ├── front-office/          # Gabarits et pages destinées aux utilisateurs (includes/)
+│   └── back-office/           # Gabarits et pages destinées à l'administration (partials/)
+├── database/                  # Scripts SQL de la base de données
 ├── public/assets/             # Fichiers CSS, JavaScript et médias
 └── index.php                  # Routeur principal
 ```
